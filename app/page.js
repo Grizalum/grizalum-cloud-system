@@ -307,6 +307,11 @@ const LoanTracker = () => {
     alert('✅ Prestatario actualizado');
   };
 
+  const showBorrowerHistory = (borrower) => {
+    setSelectedBorrower(borrower);
+    setShowPaymentHistory(true);
+  };
+
   const deletePayment = (paymentId) => {
     if (!confirm('⚠️ ¿Estás seguro de borrar este pago?\n\nEsta acción recalculará automáticamente el saldo del prestatario.')) {
       return;
@@ -319,23 +324,18 @@ const LoanTracker = () => {
         return;
       }
 
-      // Remover el pago de la lista
       const updatedPayments = payments.filter(p => p.id !== paymentId);
       
-      // Recalcular el saldo del prestatario
       const borrower = borrowers.find(b => b.id === paymentToDelete.borrowerId);
       if (borrower) {
-        // Obtener todos los pagos restantes de este prestatario ordenados por fecha
         const borrowerPayments = updatedPayments
           .filter(p => p.borrowerId === paymentToDelete.borrowerId)
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        // Recalcular el saldo actual basado en los pagos restantes
         const totalPaid = borrowerPayments.reduce((sum, payment) => sum + payment.amount, 0);
         const newCurrentBalance = borrower.totalToPay - totalPaid;
         const newPaymentsMade = borrowerPayments.length;
         
-        // Determinar el nuevo estado
         let newStatus = 'Pendiente';
         if (newPaymentsMade > 0 && newCurrentBalance > 0) {
           newStatus = 'En Progreso';
@@ -343,7 +343,6 @@ const LoanTracker = () => {
           newStatus = 'Pagado';
         }
 
-        // Actualizar el prestatario
         const updatedBorrowers = borrowers.map(b => 
           b.id === paymentToDelete.borrowerId ? {
             ...b,
@@ -353,7 +352,6 @@ const LoanTracker = () => {
           } : b
         );
 
-        // Recalcular el remainingBalance de los pagos restantes
         let runningBalance = borrower.totalToPay;
         const recalculatedPayments = updatedPayments.map(payment => {
           if (payment.borrowerId === paymentToDelete.borrowerId) {
@@ -377,10 +375,7 @@ const LoanTracker = () => {
     }
   };
 
-  const showBorrowerHistory = (borrower) => {
-    setSelectedBorrower(borrower);
-    setShowPaymentHistory(true);
-  };
+  const totalLent = borrowers.reduce((acc, b) => acc + b.loanAmount, 0);
   const totalExpected = borrowers.reduce((acc, b) => acc + b.totalToPay, 0);
   const totalBalance = borrowers.reduce((acc, b) => acc + b.currentBalance, 0);
   const totalCollected = totalExpected - totalBalance;
@@ -645,7 +640,6 @@ const LoanTracker = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredBorrowers.map((borrower) => (
                     <tr key={borrower.id} className="hover:bg-gray-50 transition-colors">
-                      <tr key={borrower.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-4">
                         <div>
                           <div className="font-bold text-gray-900">{borrower.name}</div>
@@ -697,6 +691,8 @@ const LoanTracker = () => {
             </div>
           )}
         </div>
+        
+        {/* Modal de Editar Prestatario */}
         {editingBorrower && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl p-6 w-full max-w-md">
@@ -716,6 +712,8 @@ const LoanTracker = () => {
             </div>
           </div>
         )}
+
+        {/* Modal de Historial de Pagos Individual */}
         {showPaymentHistory && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
@@ -791,12 +789,21 @@ const LoanTracker = () => {
             </div>
           </div>
         )}
+
+        {/* Modal de Agregar Prestatario */}
         {showAddBorrower && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl p-6 w-full max-w-md">
               <h3 className="text-xl font-bold mb-4">Nuevo Prestatario</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Nombre completo" value={newBorrower.name} onChange={(e) => setNewBorrower({...newBorrower, name: e.target.value})} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" autoComplete="off" autoFocus={false} />
+                <input 
+                  type="text" 
+                  placeholder="Nombre completo" 
+                  value={newBorrower.name} 
+                  onChange={(e) => setNewBorrower({...newBorrower, name: e.target.value})} 
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+                  autoComplete="off" 
+                />
                 <input type="number" placeholder="Monto del préstamo *" value={newBorrower.loanAmount} onChange={(e) => setNewBorrower({...newBorrower, loanAmount: e.target.value})} className="w-full p-3 border rounded-lg" />
                 <input type="text" placeholder="Teléfono" value={newBorrower.phone} onChange={(e) => setNewBorrower({...newBorrower, phone: e.target.value})} className="w-full p-3 border rounded-lg" />
                 <input type="email" placeholder="Email" value={newBorrower.email} onChange={(e) => setNewBorrower({...newBorrower, email: e.target.value})} className="w-full p-3 border rounded-lg" />
