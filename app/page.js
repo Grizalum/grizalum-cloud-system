@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { DollarSign, TrendingUp, Users, Plus, Search, Home, CreditCard, History, Menu, Clock, X, Edit2, Save, Cloud } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Plus, Search, Home, CreditCard, History, Menu, Clock, X, Edit2, Save, Cloud, Trash2 } from 'lucide-react';
 
 const LoanTracker = () => {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -28,6 +28,8 @@ const LoanTracker = () => {
     phone: '',
     email: ''
   });
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+  const [selectedBorrower, setSelectedBorrower] = useState(null);
 
   const shareData = () => {
     try {
@@ -305,7 +307,80 @@ const LoanTracker = () => {
     alert('✅ Prestatario actualizado');
   };
 
-  const totalLent = borrowers.reduce((acc, b) => acc + b.loanAmount, 0);
+  const deletePayment = (paymentId) => {
+    if (!confirm('⚠️ ¿Estás seguro de borrar este pago?\n\nEsta acción recalculará automáticamente el saldo del prestatario.')) {
+      return;
+    }
+
+    try {
+      const paymentToDelete = payments.find(p => p.id === paymentId);
+      if (!paymentToDelete) {
+        alert('❌ Pago no encontrado');
+        return;
+      }
+
+      // Remover el pago de la lista
+      const updatedPayments = payments.filter(p => p.id !== paymentId);
+      
+      // Recalcular el saldo del prestatario
+      const borrower = borrowers.find(b => b.id === paymentToDelete.borrowerId);
+      if (borrower) {
+        // Obtener todos los pagos restantes de este prestatario ordenados por fecha
+        const borrowerPayments = updatedPayments
+          .filter(p => p.borrowerId === paymentToDelete.borrowerId)
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Recalcular el saldo actual basado en los pagos restantes
+        const totalPaid = borrowerPayments.reduce((sum, payment) => sum + payment.amount, 0);
+        const newCurrentBalance = borrower.totalToPay - totalPaid;
+        const newPaymentsMade = borrowerPayments.length;
+        
+        // Determinar el nuevo estado
+        let newStatus = 'Pendiente';
+        if (newPaymentsMade > 0 && newCurrentBalance > 0) {
+          newStatus = 'En Progreso';
+        } else if (newCurrentBalance <= 0) {
+          newStatus = 'Pagado';
+        }
+
+        // Actualizar el prestatario
+        const updatedBorrowers = borrowers.map(b => 
+          b.id === paymentToDelete.borrowerId ? {
+            ...b,
+            currentBalance: Math.round(newCurrentBalance * 100) / 100,
+            paymentsMade: newPaymentsMade,
+            status: newStatus
+          } : b
+        );
+
+        // Recalcular el remainingBalance de los pagos restantes
+        let runningBalance = borrower.totalToPay;
+        const recalculatedPayments = updatedPayments.map(payment => {
+          if (payment.borrowerId === paymentToDelete.borrowerId) {
+            runningBalance -= payment.amount;
+            return {
+              ...payment,
+              remainingBalance: Math.round(runningBalance * 100) / 100
+            };
+          }
+          return payment;
+        });
+
+        setBorrowers(updatedBorrowers);
+        setPayments(recalculatedPayments);
+        
+        alert('✅ Pago eliminado y datos recalculados correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar pago:', error);
+      alert('❌ Error al eliminar el pago. Intenta de nuevo.');
+    }
+  };
+
+  const showBorrowerHistory = (borrower) => {
+    setSelectedBorrower(borrower);
+    setShowPaymentHistory(true);
+  };
   const totalExpected = borrowers.reduce((acc, b) => acc + b.totalToPay, 0);
   const totalBalance = borrowers.reduce((acc, b) => acc + b.currentBalance, 0);
   const totalCollected = totalExpected - totalBalance;
@@ -315,6 +390,9 @@ const LoanTracker = () => {
     const matchesFilter = filterStatus === 'all' || borrower.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
+
+  const borrowerPayments = selectedBorrower ? 
+    payments.filter(p => p.borrowerId === selectedBorrower.id) : [];
 
   const progressData = borrowers.map(b => ({
     name: b.name.split(' ')[0],
@@ -362,41 +440,43 @@ const LoanTracker = () => {
       </span>
     );
   };
+
   const ConnectionStatus = () => {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  if (!mounted) return null;
-  
-  const getStatusInfo = () => {
-    if (syncStatus === 'syncing') {
-      return { color: 'text-blue-500', icon: 'animate-pulse', text: 'Sincronizando...' };
-    } else if (syncStatus === 'synced') {
-      return { color: 'text-green-500', icon: '', text: '☁️ Sincronizado ' + new Date().toLocaleTimeString() };
-    } else {
-      return { color: 'text-red-500', icon: '', text: 'Error de conexión' };
-    }
-  };
-  
-  const statusInfo = getStatusInfo();
-  
-  return (
-    <div className="flex items-center space-x-2 text-xs">
-      <Cloud className={'h-4 w-4 ' + statusInfo.color + ' ' + statusInfo.icon} />
-      <span className={statusInfo.color}>
-        {statusInfo.text}
-      </span>
-      {syncStatus === 'synced' && (
-        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold">
-          ✅ NUBE ACTIVA
+    const [mounted, setMounted] = useState(false);
+    
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+    
+    if (!mounted) return null;
+    
+    const getStatusInfo = () => {
+      if (syncStatus === 'syncing') {
+        return { color: 'text-blue-500', icon: 'animate-pulse', text: 'Sincronizando...' };
+      } else if (syncStatus === 'synced') {
+        return { color: 'text-green-500', icon: '', text: '☁️ Sincronizado ' + new Date().toLocaleTimeString() };
+      } else {
+        return { color: 'text-red-500', icon: '', text: 'Error de conexión' };
+      }
+    };
+    
+    const statusInfo = getStatusInfo();
+    
+    return (
+      <div className="flex items-center space-x-2 text-xs">
+        <Cloud className={'h-4 w-4 ' + statusInfo.color + ' ' + statusInfo.icon} />
+        <span className={statusInfo.color}>
+          {statusInfo.text}
         </span>
-      )}
-    </div>
-  );
-};
+        {syncStatus === 'synced' && (
+          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold">
+            ✅ NUBE ACTIVA
+          </span>
+        )}
+      </div>
+    );
+  };
+
   const Dashboard = () => (
     <div className="space-y-8 relative">
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
@@ -565,286 +645,4 @@ const LoanTracker = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredBorrowers.map((borrower) => (
                     <tr key={borrower.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-4">
-                        <div>
-                          <div className="font-bold text-gray-900">{borrower.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {borrower.phone && '📱 ' + borrower.phone}
-                            {borrower.email && ' | 📧 ' + borrower.email}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-gray-900">S/ {borrower.loanAmount.toLocaleString()}</td>
-                      <td className="px-4 py-4 font-semibold text-blue-600">S/ {borrower.monthlyPayment.toLocaleString()}</td>
-                     <td className="px-4 py-4 font-semibold text-red-600">S/ {borrower.currentBalance.toLocaleString()}</td>
-                     <td className="px-4 py-4">
-                       <div className="flex items-center">
-                         <div className="bg-gray-200 rounded-full h-2 w-16 mr-2">
-                           <div className="bg-orange-500 h-2 rounded-full" style={{ width: (borrower.paymentsMade / borrower.loanTerm) * 100 + '%' }}></div>
-                         </div>
-                         <span className="text-xs text-gray-600">{borrower.paymentsMade}/{borrower.loanTerm}</span>
-                       </div>
-                     </td>
-                     <td className="px-4 py-4"><StatusBadge status={borrower.status} /></td>
-                     <td className="px-4 py-4">
-                       <div className="flex space-x-2">
-                         {editingBorrower === borrower.id ? (
-                           <div className="flex space-x-2">
-                             <button onClick={saveEditBorrower} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all">
-                               <Save size={16} />
-                             </button>
-                             <button onClick={() => setEditingBorrower(null)} className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition-all">
-                               <X size={16} />
-                             </button>
-                           </div>
-                         ) : (
-                           <button onClick={() => startEditBorrower(borrower)} className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all">
-                             <Edit2 size={16} />
-                           </button>
-                         )}
-                       </div>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
-         )}
-       </div>
-       {editingBorrower && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-             <h3 className="text-xl font-bold mb-4">Editar Prestatario</h3>
-             <div className="space-y-4">
-               <input type="text" placeholder="Nombre" value={editForm.name || ''} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="text" placeholder="Teléfono" value={editForm.phone || ''} onChange={(e) => setEditForm({...editForm, phone: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="email" placeholder="Email" value={editForm.email || ''} onChange={(e) => setEditForm({...editForm, email: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="number" placeholder="Monto del préstamo" value={editForm.loanAmount || ''} onChange={(e) => setEditForm({...editForm, loanAmount: parseFloat(e.target.value) || 0})} className="w-full p-3 border rounded-lg" />
-               <input type="number" placeholder="Saldo actual" value={editForm.currentBalance || ''} onChange={(e) => setEditForm({...editForm, currentBalance: parseFloat(e.target.value) || 0})} className="w-full p-3 border rounded-lg" />
-               <input type="number" placeholder="Pagos realizados" value={editForm.paymentsMade || ''} onChange={(e) => setEditForm({...editForm, paymentsMade: parseInt(e.target.value) || 0})} className="w-full p-3 border rounded-lg" />
-             </div>
-             <div className="flex space-x-4 mt-6">
-               <button onClick={saveEditBorrower} className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-all">Guardar</button>
-               <button onClick={() => setEditingBorrower(null)} className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-all">Cancelar</button>
-             </div>
-           </div>
-         </div>
-       )}
-       {showAddBorrower && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-             <h3 className="text-xl font-bold mb-4">Nuevo Prestatario</h3>
-             <div className="space-y-4">
-               <input type="text" placeholder="Nombre completo *" value={newBorrower.name} onChange={(e) => setNewBorrower({...newBorrower, name: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="number" placeholder="Monto del préstamo *" value={newBorrower.loanAmount} onChange={(e) => setNewBorrower({...newBorrower, loanAmount: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="text" placeholder="Teléfono" value={newBorrower.phone} onChange={(e) => setNewBorrower({...newBorrower, phone: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <input type="email" placeholder="Email" value={newBorrower.email} onChange={(e) => setNewBorrower({...newBorrower, email: e.target.value})} className="w-full p-3 border rounded-lg" />
-               <div className="bg-orange-50 p-3 rounded-lg">
-                 <p className="text-sm text-orange-700">
-                   <strong>Condiciones por defecto:</strong><br/>
-                   • Tasa de interés: 18% anual<br/>
-                   • Plazo: 18 meses<br/>
-                   • Se puede editar después
-                 </p>
-               </div>
-             </div>
-             <div className="flex space-x-4 mt-6">
-               <button onClick={handleAddBorrower} className="flex-1 bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-all">Agregar</button>
-               <button onClick={() => setShowAddBorrower(false)} className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-all">Cancelar</button>
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   </div>
- );
-
- const Payments = () => (
-   <div className="space-y-6 relative">
-     <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-       <GrizalumLogo size="600" />
-     </div>
-     <div className="relative z-10">
-       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-         <h2 className="text-3xl font-bold text-gray-800">Registrar Pago</h2>
-         <p className="text-gray-600">Procesa los pagos de tus prestatarios</p>
-         <div className="mt-2"><ConnectionStatus /></div>
-       </div>
-       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-         <h3 className="text-xl font-bold mb-6 text-gray-800">Nuevo Pago</h3>
-         {borrowers.length === 0 ? (
-           <div className="text-center py-8">
-             <div className="text-4xl mb-4">💳</div>
-             <h3 className="text-xl font-bold text-gray-500">No hay prestatarios</h3>
-             <p className="text-gray-400">Primero agrega un prestatario para registrar pagos</p>
-           </div>
-         ) : (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-             <select value={paymentForm.borrowerId || ''} onChange={(e) => handleBorrowerSelect(parseInt(e.target.value))} className="p-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-all">
-               <option value="">Seleccionar prestatario</option>
-               {borrowers.filter(b => b.status !== 'Pagado').map(borrower => (
-                 <option key={borrower.id} value={borrower.id}>{borrower.name} - S/ {borrower.currentBalance.toLocaleString()}</option>
-               ))}
-             </select>
-             <input type="number" placeholder="Monto" value={paymentForm.amount} onChange={(e) => setPaymentForm({...paymentForm, amount: e.target.value, isCustomAmount: true})} className="p-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-all" />
-             <input type="date" value={paymentForm.date} onChange={(e) => setPaymentForm({...paymentForm, date: e.target.value})} className="p-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-all" />
-             <button onClick={handlePayment} disabled={!paymentForm.borrowerId || !paymentForm.amount} className="bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold">💰 Registrar Pago</button>
-           </div>
-         )}
-         {paymentForm.borrowerId && (
-           <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-             {(() => {
-               const borrower = borrowers.find(b => b.id === paymentForm.borrowerId);
-               return borrower ? (
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                   <div>
-                     <span className="font-semibold text-blue-700">Cuota mensual:</span>
-                     <div className="text-lg font-bold text-blue-800">S/ {borrower.monthlyPayment.toLocaleString()}</div>
-                   </div>
-                   <div>
-                     <span className="font-semibold text-blue-700">Saldo actual:</span>
-                     <div className="text-lg font-bold text-red-600">S/ {borrower.currentBalance.toLocaleString()}</div>
-                   </div>
-                   <div>
-                     <span className="font-semibold text-blue-700">Progreso:</span>
-                     <div className="text-lg font-bold text-green-600">{borrower.paymentsMade}/{borrower.loanTerm} meses</div>
-                   </div>
-                 </div>
-               ) : null;
-             })()}
-           </div>
-         )}
-       </div>
-     </div>
-   </div>
- );
-
- const History = () => (
-   <div className="space-y-6 relative">
-     <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-       <GrizalumLogo size="600" />
-     </div>
-     <div className="relative z-10">
-       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-         <h2 className="text-3xl font-bold text-gray-800">Historial de Pagos</h2>
-         <p className="text-gray-600">Registro completo de transacciones</p>
-         <div className="mt-2"><ConnectionStatus /></div>
-       </div>
-       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-         {payments.length === 0 ? (
-           <div className="text-center py-12">
-             <div className="text-4xl mb-4">📋</div>
-             <h3 className="text-xl font-bold text-gray-500">No hay pagos registrados</h3>
-             <p className="text-gray-400">Los pagos aparecerán aquí cuando los registres</p>
-           </div>
-         ) : (
-           <div className="overflow-x-auto">
-             <table className="w-full">
-               <thead className="bg-gray-50">
-                 <tr>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Fecha</th>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Prestatario</th>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Monto</th>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Saldo Restante</th>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Hora</th>
-                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Tipo</th>
-                 </tr>
-               </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
-                 {payments.slice().reverse().map((payment) => (
-                   <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
-                     <td className="px-4 py-4 font-medium text-gray-900">{new Date(payment.date).toLocaleDateString('es-PE')}</td>
-                     <td className="px-4 py-4 text-gray-900">{payment.borrowerName}</td>
-                     <td className="px-4 py-4 font-bold text-green-600">S/ {payment.amount.toLocaleString()}</td>
-                     <td className="px-4 py-4 font-semibold text-red-600">S/ {payment.remainingBalance.toLocaleString()}</td>
-                     <td className="px-4 py-4 text-gray-500 text-sm">{payment.time}</td>
-                     <td className="px-4 py-4">
-                       {payment.isEdited ? (
-                         <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">🔧 Personalizado</span>
-                       ) : (
-                         <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold">✓ Cuota Normal</span>
-                       )}
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
-         )}
-       </div>
-     </div>
-   </div>
- );
-
- const Sidebar = () => (
-   <div className={'fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-orange-600 to-red-800 text-white transform transition-transform duration-300 ease-in-out ' + (sidebarOpen ? 'translate-x-0' : '-translate-x-full') + ' lg:translate-x-0 lg:static lg:inset-0'}>
-     <div className="flex items-center justify-between p-6 border-b border-orange-700">
-       <div className="flex items-center space-x-3">
-         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-           <span className="text-orange-600 font-bold text-xl">G</span>
-         </div>
-         <div>
-           <h1 className="text-xl font-bold">GRIZALUM</h1>
-           <p className="text-xs text-orange-200">Cloud System</p>
-         </div>
-       </div>
-       <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white hover:bg-orange-700 p-2 rounded-lg">
-         <X size={20} />
-       </button>
-     </div>
-     <nav className="mt-6">
-       <div className="px-6 mb-4">
-         <h3 className="text-xs font-semibold text-orange-200 uppercase tracking-wider">Menú Principal</h3>
-       </div>
-       <div>
-         <button onClick={() => { setCurrentView('dashboard'); setSidebarOpen(false); }} className={'w-full flex items-center px-6 py-3 text-left transition-all ' + (currentView === 'dashboard' ? 'bg-white bg-opacity-20 border-r-4 border-white' : 'hover:bg-white hover:bg-opacity-10')}>
-           <Home className="mr-3" size={20} />Dashboard
-         </button>
-         <button onClick={() => { setCurrentView('borrowers'); setSidebarOpen(false); }} className={'w-full flex items-center px-6 py-3 text-left transition-all ' + (currentView === 'borrowers' ? 'bg-white bg-opacity-20 border-r-4 border-white' : 'hover:bg-white hover:bg-opacity-10')}>
-           <Users className="mr-3" size={20} />Prestatarios
-         </button>
-         <button onClick={() => { setCurrentView('payments'); setSidebarOpen(false); }} className={'w-full flex items-center px-6 py-3 text-left transition-all ' + (currentView === 'payments' ? 'bg-white bg-opacity-20 border-r-4 border-white' : 'hover:bg-white hover:bg-opacity-10')}>
-           <CreditCard className="mr-3" size={20} />Registrar Pago
-         </button>
-         <button onClick={() => { setCurrentView('history'); setSidebarOpen(false); }} className={'w-full flex items-center px-6 py-3 text-left transition-all ' + (currentView === 'history' ? 'bg-white bg-opacity-20 border-r-4 border-white' : 'hover:bg-white hover:bg-opacity-10')}>
-           <History className="mr-3" size={20} />Historial
-         </button>
-       </div>
-     </nav>
-     <div className="px-6 mt-8">
-       <div className="bg-white bg-opacity-10 rounded-xl p-4">
-         <h4 className="font-semibold mb-2">💡 Tip del día</h4>
-         <p className="text-sm text-orange-100">Los datos se guardan automáticamente. ¡Comparte el link para acceder desde cualquier dispositivo!</p>
-       </div>
-     </div>
-   </div>
- );
-
- return (
-   <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100">
-     <Sidebar />
-     <div className="lg:ml-64">
-       <div className="lg:hidden bg-white shadow-sm p-4">
-         <div className="flex items-center justify-between">
-           <button onClick={() => setSidebarOpen(true)} className="text-gray-600 hover:text-gray-900">
-             <Menu size={24} />
-           </button>
-           <h1 className="text-xl font-bold text-gray-800">GRIZALUM Cloud</h1>
-           <div className="w-6"></div>
-         </div>
-       </div>
-       <div className="p-6">
-         {currentView === 'dashboard' && <Dashboard />}
-         {currentView === 'borrowers' && <Borrowers />}
-         {currentView === 'payments' && <Payments />}
-         {currentView === 'history' && <History />}
-       </div>
-     </div>
-     {sidebarOpen && (
-       <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)}></div>
-     )}
-   </div>
- );
-};
-
-export default LoanTracker;
+                      <t
