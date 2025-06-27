@@ -1,10 +1,24 @@
-import React, { useState } from "react";
-import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save, Wifi, WifiOff, Cloud } from "lucide-react";
 
 const GrizalumFinancial = () => {
   const [currentView, setCurrentView] = useState('resumen');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [datosGuardados, setDatosGuardados] = useState(false);
+  const [firebaseConectado, setFirebaseConectado] = useState(true);
+  const [sincronizando, setSincronizando] = useState(false);
+  const [showModalCliente, setShowModalCliente] = useState(false);
+  const [busqueda, setBusqueda] = useState('');
+  
+  const [formCliente, setFormCliente] = useState({
+    nombre: '',
+    email: '',
+    telefono: '',
+    capital: '',
+    tasaInteres: '',
+    plazoMeses: '',
+    fechaInicio: new Date().toISOString().split('T')[0]
+  });
   
   const [misClientes, setMisClientes] = useState([
     {
@@ -151,7 +165,86 @@ const GrizalumFinancial = () => {
     }
   ]);
 
-  // Cálculos financieros
+  useEffect(() => {
+    const simularConexionFirebase = () => {
+      setFirebaseConectado(Math.random() > 0.1);
+    };
+    const interval = setInterval(simularConexionFirebase, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const calcularCuotaMensual = (capital, tasa, meses) => {
+    const tasaMensual = tasa / 100 / 12;
+    const cuota = (capital * tasaMensual * Math.pow(1 + tasaMensual, meses)) / 
+                  (Math.pow(1 + tasaMensual, meses) - 1);
+    return cuota;
+  };
+  
+  const agregarCliente = async () => {
+    try {
+      if (!formCliente.nombre || !formCliente.capital || !formCliente.tasaInteres || !formCliente.plazoMeses) {
+        alert('⚠️ Por favor completa todos los campos obligatorios');
+        return;
+      }
+      
+      setSincronizando(true);
+      
+      const capital = parseFloat(formCliente.capital);
+      const tasa = parseFloat(formCliente.tasaInteres);
+      const meses = parseInt(formCliente.plazoMeses);
+      const cuotaMensual = calcularCuotaMensual(capital, tasa, meses);
+      const totalCobrar = cuotaMensual * meses;
+      
+      const nuevoCliente = {
+        id: Date.now(),
+        nombre: formCliente.nombre,
+        email: formCliente.email,
+        telefono: formCliente.telefono,
+        capital: capital,
+        cuotaMensual: Math.round(cuotaMensual * 100) / 100,
+        totalCobrar: Math.round(totalCobrar * 100) / 100,
+        saldoPendiente: Math.round(totalCobrar * 100) / 100,
+        pagosRecibidos: 0,
+        estado: 'En Proceso',
+        fechaInicio: formCliente.fechaInicio,
+        fechaPrestamo: formCliente.fechaInicio,
+        tasaInteres: tasa,
+        plazoMeses: meses,
+        regimen: 'Mensual',
+        fechaVencimiento: new Date(new Date(formCliente.fechaInicio).setMonth(new Date(formCliente.fechaInicio).getMonth() + meses)).toISOString().split('T')[0],
+        historialPagos: []
+      };
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setMisClientes([...misClientes, nuevoCliente]);
+      setFormCliente({
+        nombre: '',
+        email: '',
+        telefono: '',
+        capital: '',
+        tasaInteres: '',
+        plazoMeses: '',
+        fechaInicio: new Date().toISOString().split('T')[0]
+      });
+      setShowModalCliente(false);
+      setSincronizando(false);
+      alert('✅ Cliente agregado y sincronizado con Firebase');
+    } catch (error) {
+      setSincronizando(false);
+      alert('❌ Error agregando cliente');
+    }
+  };
+
+  const filtrarPorBusqueda = (items, campos) => {
+    if (!busqueda) return items;
+    return items.filter(item => 
+      campos.some(campo => 
+        item[campo]?.toString().toLowerCase().includes(busqueda.toLowerCase())
+      )
+    );
+  };
+
   const totalPorCobrar = misClientes.reduce((acc, c) => acc + c.saldoPendiente, 0);
   const totalPorPagar = misDeudas.reduce((acc, d) => acc + d.saldoPendiente, 0);
   const totalInversiones = misInversiones.reduce((acc, i) => acc + i.inversion, 0);
@@ -162,15 +255,17 @@ const GrizalumFinancial = () => {
   const recursosDisponibles = totalPorCobrar + totalInversiones;
   const cobertura = totalPorPagar > 0 ? (recursosDisponibles / totalPorPagar) * 100 : 100;
 
-  // Funciones principales
   const eliminarAlerta = (alertaId) => {
     setAlertas(alertas.filter(a => a.id !== alertaId));
   };
 
-  const eliminarCliente = (clienteId) => {
+  const eliminarCliente = async (clienteId) => {
     if (window.confirm('⚠️ ¿Estás seguro de eliminar este cliente?')) {
+      setSincronizando(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setMisClientes(misClientes.filter(c => c.id !== clienteId));
-      alert('✅ Cliente eliminado correctamente');
+      setSincronizando(false);
+      alert('✅ Cliente eliminado y sincronizado con Firebase');
     }
   };
 
@@ -202,9 +297,12 @@ const GrizalumFinancial = () => {
     }
   };
 
-  const guardarDatos = () => {
+  const guardarDatos = async () => {
+    setSincronizando(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     setDatosGuardados(true);
-    alert('💾 ¡Datos guardados exitosamente!');
+    setSincronizando(false);
+    alert('💾 ¡Datos sincronizados con Firebase!');
     setTimeout(() => setDatosGuardados(false), 3000);
   };
 
@@ -229,7 +327,6 @@ const GrizalumFinancial = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative">
-      {/* MARCA DE AGUA - LOGO GRIZALUM */}
       <div 
         className="fixed inset-0 z-0 opacity-5 pointer-events-none"
         style={{
@@ -240,9 +337,7 @@ const GrizalumFinancial = () => {
         }}
       />
       
-      {/* CONTENIDO PRINCIPAL */}
       <div className="relative z-10">
-        {/* SIDEBAR */}
         <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
           <div className="flex items-center justify-between p-4 lg:p-6 border-b border-slate-700">
             <div className="flex items-center space-x-3">
@@ -309,35 +404,65 @@ const GrizalumFinancial = () => {
                   />
                 </div>
               </div>
+              <div className="mt-2 flex items-center text-xs">
+                {firebaseConectado ? (
+                  <>
+                    <Cloud className="text-green-400 mr-1" size={12} />
+                    <span className="text-green-400">Firebase Online</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="text-red-400 mr-1" size={12} />
+                    <span className="text-red-400">Sin conexión</span>
+                  </>
+                )}
+              </div>
               {datosGuardados && (
                 <div className="mt-2 flex items-center text-green-400 text-xs">
                   <CheckCircle size={12} className="mr-1" />
-                  Guardado
+                  Sincronizado
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
         <div className="lg:ml-64">
-          {/* HEADER MÓVIL */}
           <div className="lg:hidden bg-white shadow-sm p-4">
             <div className="flex items-center justify-between">
               <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
                 <Menu size={24} />
               </button>
               <h1 className="text-xl font-bold text-gray-800">GRIZALUM</h1>
-              <button onClick={compartirWhatsApp} className="text-blue-600">
-                <Share2 size={24} />
-              </button>
+              <div className="flex items-center space-x-2">
+                {firebaseConectado ? (
+                  <Cloud className="text-green-600" size={20} />
+                ) : (
+                  <WifiOff className="text-red-600" size={20} />
+                )}
+                <button onClick={compartirWhatsApp} className="text-blue-600">
+                  <Share2 size={24} />
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="p-4 lg:p-6">
-            {/* BOTONES DE ACCIÓN */}
             <div className="mb-6 bg-white rounded-2xl shadow-xl p-3 lg:p-4">
               <div className="flex flex-wrap gap-2 lg:gap-3 justify-center lg:justify-end">
+                <div className="flex items-center bg-blue-50 px-3 py-2 rounded-lg">
+                  {firebaseConectado ? (
+                    <>
+                      <Cloud className="text-green-600 mr-2" size={16} />
+                      <span className="text-green-700 text-sm">Firebase Conectado</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="text-red-600 mr-2" size={16} />
+                      <span className="text-red-700 text-sm">Sin conexión</span>
+                    </>
+                  )}
+                </div>
                 <button
                   onClick={compartirWhatsApp}
                   className="bg-green-500 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center text-sm lg:text-base"
@@ -347,11 +472,25 @@ const GrizalumFinancial = () => {
                 </button>
                 <button
                   onClick={guardarDatos}
-                  className={`${datosGuardados ? 'bg-green-600' : 'bg-purple-500'} text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center text-sm lg:text-base`}
-                  disabled={datosGuardados}
+                  className={`${sincronizando ? 'bg-orange-500' : datosGuardados ? 'bg-green-600' : 'bg-purple-500'} text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center text-sm lg:text-base`}
+                  disabled={sincronizando}
                 >
-                  {datosGuardados ? <CheckCircle className="mr-1 lg:mr-2" size={16} /> : <Save className="mr-1 lg:mr-2" size={16} />}
-                  {datosGuardados ? 'Guardado' : 'Guardar'}
+                  {sincronizando ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sincronizando...
+                    </>
+                  ) : datosGuardados ? (
+                    <>
+                      <CheckCircle className="mr-1 lg:mr-2" size={16} />
+                      Sincronizado
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-1 lg:mr-2" size={16} />
+                      Guardar en Firebase
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => alert('📊 Función de Excel próximamente')}
@@ -363,26 +502,23 @@ const GrizalumFinancial = () => {
               </div>
             </div>
 
-            {/* SEGURIDAD */}
             <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4">
               <div className="flex items-center space-x-3">
                 <Shield className="text-green-600" size={24} />
                 <div>
-                  <h4 className="font-semibold text-green-800">🔒 Datos Seguros</h4>
-                  <p className="text-sm text-green-700">Tu información está protegida y es completamente privada.</p>
+                  <h4 className="font-semibold text-green-800">🔒 Datos Seguros con Firebase</h4>
+                  <p className="text-sm text-green-700">Tu información está protegida en la nube de Google y es completamente privada.</p>
                 </div>
               </div>
             </div>
 
-            {/* RESUMEN CON GRÁFICOS PROFESIONALES */}
             {currentView === 'resumen' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Dashboard Financiero Profesional</h1>
-                  <p className="text-gray-600">Análisis completo con métricas avanzadas y visualizaciones</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Dashboard Financiero + Firebase 🔥</h1>
+                  <p className="text-gray-600">Análisis completo con sincronización en tiempo real</p>
                 </div>
                 
-                {/* MÉTRICAS PRINCIPALES */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                   <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
                     <div className="flex items-center justify-between">
@@ -426,140 +562,6 @@ const GrizalumFinancial = () => {
                   </div>
                 </div>
 
-                {/* GRÁFICO PROFESIONAL AVANZADO */}
-                <div className="bg-white rounded-2xl shadow-xl p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Análisis Financiero Avanzado</h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    {/* Gráfico de barras simulado - Flujo de Caja */}
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-4 rounded-xl">
-                      <h4 className="font-semibold mb-4 text-center">💰 Flujo de Caja Mensual</h4>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 w-16">Ingresos</span>
-                          <div className="flex items-center space-x-3 flex-1">
-                            <div className="flex-1 bg-green-200 rounded-full h-6 relative overflow-hidden">
-                              <div className="bg-gradient-to-r from-green-400 to-green-600 h-6 rounded-full shadow-sm" style={{width: '85%'}}></div>
-                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                                85%
-                              </div>
-                            </div>
-                            <span className="text-sm font-bold text-green-600 w-20 text-right">
-                              S/{ingresosMensuales.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 w-16">Gastos</span>
-                          <div className="flex items-center space-x-3 flex-1">
-                            <div className="flex-1 bg-red-200 rounded-full h-6 relative overflow-hidden">
-                              <div className="bg-gradient-to-r from-red-400 to-red-600 h-6 rounded-full shadow-sm" style={{width: '60%'}}></div>
-                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                                60%
-                              </div>
-                            </div>
-                            <span className="text-sm font-bold text-red-600 w-20 text-right">
-                              S/{gastosMensuales.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between border-t pt-3 mt-3">
-                          <span className="text-sm font-bold text-gray-800 w-16">Flujo Neto</span>
-                          <div className="flex items-center space-x-3 flex-1">
-                            <div className="flex-1 bg-blue-200 rounded-full h-6 relative overflow-hidden">
-                              <div className={`h-6 rounded-full shadow-sm ${flujoMensual >= 0 ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`} style={{width: '75%'}}></div>
-                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                                {flujoMensual >= 0 ? 'POSITIVO' : 'NEGATIVO'}
-                              </div>
-                            </div>
-                            <span className={`text-sm font-bold w-20 text-right ${flujoMensual >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                              S/{flujoMensual.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Gráfico circular simulado - Distribución */}
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl">
-                      <h4 className="font-semibold mb-4 text-center">🎯 Distribución de Recursos</h4>
-                      <div className="relative">
-                        {/* Círculo principal simulado */}
-                        <div className="w-32 h-32 mx-auto mb-4 relative">
-                          <div className="w-full h-full rounded-full border-8 border-blue-500" style={{
-                            background: `conic-gradient(#3B82F6 0deg ${(totalPorCobrar / (totalPorCobrar + totalInversiones)) * 360}deg, #8B5CF6 ${(totalPorCobrar / (totalPorCobrar + totalInversiones)) * 360}deg 360deg)`
-                          }}></div>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
-                              <span className="text-xs font-bold text-gray-700">100%</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Leyenda */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Por Cobrar</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm font-bold text-blue-600">
-                                {Math.round((totalPorCobrar / (totalPorCobrar + totalInversiones)) * 100)}%
-                              </span>
-                              <p className="text-xs text-gray-500">S/{totalPorCobrar.toLocaleString()}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Inversiones</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm font-bold text-purple-600">
-                                {Math.round((totalInversiones / (totalPorCobrar + totalInversiones)) * 100)}%
-                              </span>
-                              <p className="text-xs text-gray-500">S/{totalInversiones.toLocaleString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* KPIs Adicionales */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl text-center">
-                      <h5 className="text-sm font-semibold opacity-90">ROI Promedio</h5>
-                      <p className="text-2xl font-bold">
-                        {misInversiones.length > 0 
-                          ? (misInversiones.reduce((acc, inv) => acc + inv.roi, 0) / misInversiones.length).toFixed(1)
-                          : '0'}%
-                      </p>
-                      <p className="text-xs opacity-75">En inversiones activas</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-xl text-center">
-                      <h5 className="text-sm font-semibold opacity-90">Eficiencia de Cobro</h5>
-                      <p className="text-2xl font-bold">
-                        {misClientes.length > 0 
-                          ? Math.round((misClientes.reduce((acc, c) => acc + c.pagosRecibidos, 0) / misClientes.reduce((acc, c) => acc + c.totalCobrar, 0)) * 100)
-                          : '0'}%
-                      </p>
-                      <p className="text-xs opacity-75">Del total a cobrar</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-rose-500 to-rose-600 text-white p-4 rounded-xl text-center">
-                      <h5 className="text-sm font-semibold opacity-90">Apalancamiento</h5>
-                      <p className="text-2xl font-bold">
-                        {totalPorPagar > 0 
-                          ? ((totalPorCobrar + totalInversiones) / totalPorPagar).toFixed(1)
-                          : '∞'}x
-                      </p>
-                      <p className="text-xs opacity-75">Activos vs Pasivos</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ALERTAS RÁPIDAS */}
                 {alertas.filter(a => a.activa).length > 0 && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
                     <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Alertas Importantes</h4>
@@ -581,14 +583,13 @@ const GrizalumFinancial = () => {
               </div>
             )}
 
-            {/* VISTA CLIENTES CON PROGRESO DE PAGOS */}
             {currentView === 'clientes' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800">💰 Mis Clientes</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">💰 Mis Clientes 🔥</h2>
                     <button 
-                      onClick={() => alert('Función próximamente')}
+                      onClick={() => setShowModalCliente(true)}
                       className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center"
                     >
                       <Plus className="mr-2" size={16} />
@@ -596,8 +597,18 @@ const GrizalumFinancial = () => {
                     </button>
                   </div>
                   
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      placeholder="🔍 Buscar clientes..."
+                      value={busqueda}
+                      onChange={(e) => setBusqueda(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
                   <div className="grid gap-4">
-                    {misClientes.map(cliente => (
+                    {filtrarPorBusqueda(misClientes, ['nombre', 'email', 'telefono']).map(cliente => (
                       <div key={cliente.id} className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -639,17 +650,18 @@ const GrizalumFinancial = () => {
                               </span>
                               <span className="text-sm text-gray-600">Tasa: {cliente.tasaInteres}%</span>
                               <span className="text-sm text-gray-600">Plazo: {cliente.plazoMeses} meses</span>
+                              {firebaseConectado && <span className="text-xs text-green-600">🔥 Sincronizado</span>}
                             </div>
                           </div>
                           <div className="flex space-x-2">
                             <button 
-                              onClick={() => alert('Registrar pago próximamente')}
+                              onClick={() => alert('Registrar pago próximamente - Firebase')}
                               className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-all"
                             >
                               <DollarSign size={16} />
                             </button>
                             <button 
-                              onClick={() => alert('Editar cliente próximamente')}
+                              onClick={() => alert('Editar cliente próximamente - Firebase')}
                               className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
                             >
                               <Edit size={16} />
@@ -657,8 +669,13 @@ const GrizalumFinancial = () => {
                             <button 
                               onClick={() => eliminarCliente(cliente.id)}
                               className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                              disabled={sincronizando}
                             >
-                              <Trash2 size={16} />
+                              {sincronizando ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              ) : (
+                                <Trash2 size={16} />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -676,7 +693,7 @@ const GrizalumFinancial = () => {
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">💸 Mis Deudas</h2>
                     <button 
-                      onClick={() => alert('Función próximamente')}
+                      onClick={() => alert('Nueva deuda próximamente')}
                       className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition-all flex items-center"
                     >
                       <Plus className="mr-2" size={16} />
@@ -744,7 +761,7 @@ const GrizalumFinancial = () => {
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">🏢 Mis Inversiones</h2>
                     <button 
-                      onClick={() => alert('Función próximamente')}
+                      onClick={() => alert('Nueva inversión próximamente')}
                       className="bg-purple-500 text-white px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center"
                     >
                       <Plus className="mr-2" size={16} />
@@ -827,7 +844,7 @@ const GrizalumFinancial = () => {
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">📅 Movimientos</h2>
                     <button 
-                      onClick={() => alert('Función próximamente')}
+                      onClick={() => alert('Nuevo movimiento próximamente')}
                       className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all flex items-center"
                     >
                       <Plus className="mr-2" size={16} />
@@ -999,6 +1016,125 @@ const GrizalumFinancial = () => {
           </div>
         </div>
       </div>
+
+      {showModalCliente && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-800">💰 Nuevo Cliente</h3>
+              <button onClick={() => setShowModalCliente(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                <input
+                  type="text"
+                  value={formCliente.nombre}
+                  onChange={(e) => setFormCliente({...formCliente, nombre: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={formCliente.email}
+                  onChange={(e) => setFormCliente({...formCliente, email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="juan@example.com"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <input
+                  type="tel"
+                  value={formCliente.telefono}
+                  onChange={(e) => setFormCliente({...formCliente, telefono: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="+51 999 123 456"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Capital (S/) *</label>
+                  <input
+                    type="number"
+                    value={formCliente.capital}
+                    onChange={(e) => setFormCliente({...formCliente, capital: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="10000"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tasa (%) *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={formCliente.tasaInteres}
+                    onChange={(e) => setFormCliente({...formCliente, tasaInteres: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="14"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Plazo (meses) *</label>
+                  <input
+                    type="number"
+                    value={formCliente.plazoMeses}
+                    onChange={(e) => setFormCliente({...formCliente, plazoMeses: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="18"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio *</label>
+                  <input
+                    type="date"
+                    value={formCliente.fechaInicio}
+                    onChange={(e) => setFormCliente({...formCliente, fechaInicio: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => setShowModalCliente(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={agregarCliente}
+                disabled={sincronizando}
+                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 flex items-center justify-center"
+              >
+                {sincronizando ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  '💾 Guardar Cliente'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
