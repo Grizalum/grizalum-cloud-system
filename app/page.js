@@ -1,15 +1,304 @@
-'use client'
+import React, { useState, useEffect } from "react";
+import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save, Wifi, WifiOff, Cloud } from "lucide-react";
 
-import React, { useState } from 'react';
-import { 
-  Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, 
-  DollarSign, Calendar, Calculator, History, Share2, Cloud, FileSpreadsheet,
-  Edit, Bell, Check, Send, Eye, CreditCard, MessageSquare, Shield
-} from 'lucide-react';
+// Simulamos el hook de Firebase (reemplaza con tu archivo real)
+const useFirebase = (userId = 'usuario-demo') => {
+  const [loading, setLoading] = useState(false);
+  const [conectado, setConectado] = useState(true);
+
+  // Simulación de Firebase - reemplaza con tu código real
+  const guardarCliente = async (cliente) => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setLoading(false);
+    return Date.now().toString();
+  };
+
+  const escucharClientes = (callback) => {
+    // Simular datos iniciales
+    const clientesIniciales = [
+      {
+        id: '1',
+        nombre: 'Antonio',
+        email: 'antonio@example.com',
+        telefono: '+51 999 123 456',
+        capital: 10000,
+        cuotaMensual: 633.30,
+        totalCobrar: 11399.40,
+        saldoPendiente: 8000.00,
+        pagosRecibidos: 3399.40,
+        estado: 'En Proceso',
+        fechaInicio: '2024-01-15',
+        fechaPrestamo: '2024-01-15',
+        tasaInteres: 14,
+        plazoMeses: 18,
+        regimen: 'Mensual',
+        fechaVencimiento: '2025-07-15',
+        historialPagos: [
+          { id: 1, fecha: '2024-02-15', monto: 633.30, metodo: 'Transferencia' },
+          { id: 2, fecha: '2024-03-15', monto: 633.30, metodo: 'Efectivo' }
+        ]
+      },
+      {
+        id: '2',
+        nombre: 'María González',
+        email: 'maria@example.com',
+        telefono: '+51 987 654 321',
+        capital: 15000,
+        cuotaMensual: 950.00,
+        totalCobrar: 17100.00,
+        saldoPendiente: 12000.00,
+        pagosRecibidos: 5100.00,
+        estado: 'En Proceso',
+        fechaInicio: '2024-03-01',
+        fechaPrestamo: '2024-03-01',
+        tasaInteres: 14,
+        plazoMeses: 18,
+        regimen: 'Mensual',
+        fechaVencimiento: '2025-09-01',
+        historialPagos: [
+          { id: 1, fecha: '2024-04-01', monto: 950.00, metodo: 'Transferencia' }
+        ]
+      }
+    ];
+    
+    setTimeout(() => callback(clientesIniciales), 1000);
+    return () => {}; // Cleanup function
+  };
+
+  const eliminarCliente = async (clienteId) => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setLoading(false);
+  };
+
+  const crearBackupCompleto = async () => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setLoading(false);
+    return 'backup-' + Date.now();
+  };
+
+  return {
+    loading,
+    conectado,
+    guardarCliente,
+    escucharClientes,
+    eliminarCliente,
+    crearBackupCompleto
+  };
+};
 
 const GrizalumFinancial = () => {
   const [currentView, setCurrentView] = useState('resumen');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [datosGuardados, setDatosGuardados] = useState(false);
+  
+  // Firebase integration
+  const firebase = useFirebase();
+  const [sincronizando, setSincronizando] = useState(false);
+  
+  const [misClientes, setMisClientes] = useState([]);
+  const [misDeudas, setMisDeudas] = useState([
+    {
+      id: 1,
+      acreedor: 'Banco Santander',
+      descripcion: 'Préstamo comercial para capital de trabajo',
+      capital: 50000,
+      cuotaMensual: 2500.00,
+      saldoPendiente: 45000.00,
+      tasaInteres: 18,
+      estado: 'Activo',
+      proximoPago: '2025-07-21',
+      tipo: 'Préstamo Bancario'
+    },
+    {
+      id: 2,
+      acreedor: 'Proveedor Textil SAC',
+      descripcion: 'Compra de mercadería a crédito',
+      capital: 8000,
+      cuotaMensual: 800.00,
+      saldoPendiente: 6400.00,
+      tasaInteres: 0,
+      estado: 'Activo',
+      proximoPago: '2025-07-05',
+      tipo: 'Crédito Comercial'
+    }
+  ]);
+
+  const [misInversiones, setMisInversiones] = useState([
+    {
+      id: 1,
+      nombre: 'Máquina Importada Industrial',
+      descripcion: 'Máquina para aumentar producción',
+      tipo: 'Maquinaria',
+      inversion: 12000,
+      gananciaEsperada: 2500,
+      gananciaActual: 1625,
+      estado: 'En Proceso',
+      roi: 20.8,
+      progreso: 65
+    },
+    {
+      id: 2,
+      nombre: 'Local Comercial Centro',
+      descripcion: 'Alquiler de local para nueva sucursal',
+      tipo: 'Inmueble',
+      inversion: 25000,
+      gananciaEsperada: 5000,
+      gananciaActual: 3750,
+      estado: 'En Proceso',
+      roi: 25.0,
+      progreso: 75
+    }
+  ]);
+
+  const [movimientos, setMovimientos] = useState([
+    {
+      id: 1,
+      fecha: '2025-06-26',
+      tipo: 'Ingreso',
+      categoria: 'Pago Cliente',
+      descripcion: 'Pago mensual de María González',
+      monto: 950.00,
+      cliente: 'María González',
+      metodo: 'Transferencia'
+    },
+    {
+      id: 2,
+      fecha: '2025-06-25',
+      tipo: 'Egreso',
+      categoria: 'Pago Deuda',
+      descripcion: 'Cuota mensual Banco Santander',
+      monto: 2500.00,
+      cliente: 'Banco Santander',
+      metodo: 'Transferencia'
+    }
+  ]);
+
+  const [alertas, setAlertas] = useState([
+    { 
+      id: 1, 
+      mensaje: 'Pago de Antonio vence en 3 días', 
+      urgencia: 'media', 
+      tipo: 'pago_pendiente',
+      fechaVencimiento: '2025-06-29',
+      activa: true,
+      fechaCreacion: '2025-06-26'
+    }
+  ]);
+
+  const [interacciones, setInteracciones] = useState([
+    {
+      id: 1,
+      fecha: '2025-06-26T10:30:00',
+      tipo: 'pago_registrado',
+      descripcion: 'Pago de María González: S/950',
+      usuario: 'Usuario'
+    }
+  ]);
+
+  // Firebase listeners
+  useEffect(() => {
+    const unsubscribe = firebase.escucharClientes((clientes) => {
+      setMisClientes(clientes);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Cálculos financieros
+  const totalPorCobrar = misClientes.reduce((acc, c) => acc + c.saldoPendiente, 0);
+  const totalPorPagar = misDeudas.reduce((acc, d) => acc + d.saldoPendiente, 0);
+  const totalInversiones = misInversiones.reduce((acc, i) => acc + i.inversion, 0);
+  const balanceNeto = totalPorCobrar - totalPorPagar;
+  const ingresosMensuales = misClientes.reduce((acc, c) => acc + (c.estado === 'En Proceso' ? c.cuotaMensual : 0), 0);
+  const gastosMensuales = misDeudas.reduce((acc, d) => acc + (d.estado === 'Activo' ? d.cuotaMensual : 0), 0);
+  const flujoMensual = ingresosMensuales - gastosMensuales;
+  const recursosDisponibles = totalPorCobrar + totalInversiones;
+  const cobertura = totalPorPagar > 0 ? (recursosDisponibles / totalPorPagar) * 100 : 100;
+
+  // Funciones principales con Firebase
+  const eliminarAlerta = (alertaId) => {
+    setAlertas(alertas.filter(a => a.id !== alertaId));
+  };
+
+  const eliminarCliente = async (clienteId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar este cliente?')) {
+      try {
+        setSincronizando(true);
+        await firebase.eliminarCliente(clienteId);
+        setMisClientes(misClientes.filter(c => c.id !== clienteId));
+        alert('✅ Cliente eliminado de la nube');
+      } catch (error) {
+        alert('❌ Error eliminando cliente');
+        console.error(error);
+      } finally {
+        setSincronizando(false);
+      }
+    }
+  };
+
+  const eliminarDeuda = (deudaId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta deuda?')) {
+      setMisDeudas(misDeudas.filter(d => d.id !== deudaId));
+      alert('✅ Deuda eliminada correctamente');
+    }
+  };
+
+  const eliminarInversion = (inversionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta inversión?')) {
+      setMisInversiones(misInversiones.filter(i => i.id !== inversionId));
+      alert('✅ Inversión eliminada correctamente');
+    }
+  };
+
+  const eliminarMovimiento = (movimientoId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar este movimiento?')) {
+      setMovimientos(movimientos.filter(m => m.id !== movimientoId));
+      alert('✅ Movimiento eliminado correctamente');
+    }
+  };
+
+  const eliminarInteraccion = (interaccionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta actividad?')) {
+      setInteracciones(interacciones.filter(i => i.id !== interaccionId));
+      alert('✅ Actividad eliminada correctamente');
+    }
+  };
+
+  const guardarDatos = async () => {
+    try {
+      setSincronizando(true);
+      await firebase.crearBackupCompleto();
+      setDatosGuardados(true);
+      alert('💾 ¡Datos sincronizados con Firebase!');
+      setTimeout(() => setDatosGuardados(false), 3000);
+    } catch (error) {
+      alert('❌ Error sincronizando datos');
+      console.error(error);
+    } finally {
+      setSincronizando(false);
+    }
+  };
+
+  const compartirWhatsApp = () => {
+    const mensaje = `🏢 GRIZALUM - Resumen Financiero
+📅 ${new Date().toLocaleDateString()}
+
+💰 SITUACIÓN FINANCIERA:
+• Me deben: S/ ${totalPorCobrar.toLocaleString()}
+• Yo debo: S/ ${totalPorPagar.toLocaleString()}
+• Balance neto: S/ ${balanceNeto.toLocaleString()}
+• Cobertura: ${Math.round(cobertura)}%
+
+📈 CARTERimport React, { useState } from "react";
+import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save } from "lucide-react";
+
+const GrizalumFinancial = () => {
+  const [currentView, setCurrentView] = useState('resumen');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [datosGuardados, setDatosGuardados] = useState(false);
   
   const [misClientes, setMisClientes] = useState([
     {
@@ -22,14 +311,37 @@ const GrizalumFinancial = () => {
       totalCobrar: 11399.40,
       saldoPendiente: 8000.00,
       pagosRecibidos: 3399.40,
-      estado: 'Activo',
+      estado: 'En Proceso',
       fechaInicio: '2024-01-15',
+      fechaPrestamo: '2024-01-15',
+      tasaInteres: 14,
+      plazoMeses: 18,
+      regimen: 'Mensual',
+      fechaVencimiento: '2025-07-15',
       historialPagos: [
         { id: 1, fecha: '2024-02-15', monto: 633.30, metodo: 'Transferencia' },
-        { id: 2, fecha: '2024-03-15', monto: 633.30, metodo: 'Efectivo' },
-        { id: 3, fecha: '2024-04-15', monto: 1000.00, metodo: 'Transferencia' },
-        { id: 4, fecha: '2024-05-15', monto: 633.30, metodo: 'Transferencia' },
-        { id: 5, fecha: '2024-06-15', monto: 500.00, metodo: 'Efectivo' }
+        { id: 2, fecha: '2024-03-15', monto: 633.30, metodo: 'Efectivo' }
+      ]
+    },
+    {
+      id: 2,
+      nombre: 'María González',
+      email: 'maria@example.com',
+      telefono: '+51 987 654 321',
+      capital: 15000,
+      cuotaMensual: 950.00,
+      totalCobrar: 17100.00,
+      saldoPendiente: 12000.00,
+      pagosRecibidos: 5100.00,
+      estado: 'En Proceso',
+      fechaInicio: '2024-03-01',
+      fechaPrestamo: '2024-03-01',
+      tasaInteres: 14,
+      plazoMeses: 18,
+      regimen: 'Mensual',
+      fechaVencimiento: '2025-09-01',
+      historialPagos: [
+        { id: 1, fecha: '2024-04-01', monto: 950.00, metodo: 'Transferencia' }
       ]
     }
   ]);
@@ -38,1084 +350,949 @@ const GrizalumFinancial = () => {
     {
       id: 1,
       acreedor: 'Banco Santander',
+      descripcion: 'Préstamo comercial para capital de trabajo',
       capital: 50000,
       cuotaMensual: 2500.00,
       saldoPendiente: 45000.00,
+      tasaInteres: 18,
       estado: 'Activo',
-      proximoPago: '2025-07-21'
+      proximoPago: '2025-07-21',
+      tipo: 'Préstamo Bancario'
+    },
+    {
+      id: 2,
+      acreedor: 'Proveedor Textil SAC',
+      descripcion: 'Compra de mercadería a crédito',
+      capital: 8000,
+      cuotaMensual: 800.00,
+      saldoPendiente: 6400.00,
+      tasaInteres: 0,
+      estado: 'Activo',
+      proximoPago: '2025-07-05',
+      tipo: 'Crédito Comercial'
     }
   ]);
 
   const [misInversiones, setMisInversiones] = useState([
     {
       id: 1,
-      nombre: 'Máquina Importada',
-      tipo: 'Importación',
+      nombre: 'Máquina Importada Industrial',
+      descripcion: 'Máquina para aumentar producción',
+      tipo: 'Maquinaria',
       inversion: 12000,
       gananciaEsperada: 2500,
+      gananciaActual: 1625,
       estado: 'En Proceso',
       roi: 20.8,
       progreso: 65
+    },
+    {
+      id: 2,
+      nombre: 'Local Comercial Centro',
+      descripcion: 'Alquiler de local para nueva sucursal',
+      tipo: 'Inmueble',
+      inversion: 25000,
+      gananciaEsperada: 5000,
+      gananciaActual: 3750,
+      estado: 'En Proceso',
+      roi: 25.0,
+      progreso: 75
     }
   ]);
 
   const [movimientos, setMovimientos] = useState([
     {
       id: 1,
-      fecha: '2025-06-24',
+      fecha: '2025-06-26',
       tipo: 'Ingreso',
       categoria: 'Pago Cliente',
-      descripcion: 'Pago de Antonio',
-      monto: 500.00,
-      cliente: 'Antonio',
-      metodo: 'Efectivo'
+      descripcion: 'Pago mensual de María González',
+      monto: 950.00,
+      cliente: 'María González',
+      metodo: 'Transferencia'
+    },
+    {
+      id: 2,
+      fecha: '2025-06-25',
+      tipo: 'Egreso',
+      categoria: 'Pago Deuda',
+      descripcion: 'Cuota mensual Banco Santander',
+      monto: 2500.00,
+      cliente: 'Banco Santander',
+      metodo: 'Transferencia'
     }
   ]);
 
-  const [alertas] = useState([
-    { id: 1, mensaje: 'Pago de Antonio vence en 3 días', urgencia: 'media' }
+  const [alertas, setAlertas] = useState([
+    { 
+      id: 1, 
+      mensaje: 'Pago de Antonio vence en 3 días', 
+      urgencia: 'media', 
+      tipo: 'pago_pendiente',
+      fechaVencimiento: '2025-06-29',
+      activa: true,
+      fechaCreacion: '2025-06-26'
+    }
   ]);
-  
-  // Estados para modales
-  const [showModal, setShowModal] = useState('');
-  const [showEditarCliente, setShowEditarCliente] = useState(false);
-  const [showRegistrarPago, setShowRegistrarPago] = useState(false);
-  const [showCompartir, setShowCompartir] = useState(false);
-  const [showCronograma, setShowCronograma] = useState(false);
-  
-  // Estados para formularios
-  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
-  const [formData, setFormData] = useState({});
-  const [pagoData, setPagoData] = useState({ 
-    monto: '', 
-    fecha: new Date().toISOString().split('T')[0], 
-    metodo: 'Transferencia', 
-    nota: '' 
-  });
+
+  const [interacciones, setInteracciones] = useState([
+    {
+      id: 1,
+      fecha: '2025-06-26T10:30:00',
+      tipo: 'pago_registrado',
+      descripcion: 'Pago de María González: S/950',
+      usuario: 'Usuario'
+    }
+  ]);
 
   // Cálculos financieros
   const totalPorCobrar = misClientes.reduce((acc, c) => acc + c.saldoPendiente, 0);
   const totalPorPagar = misDeudas.reduce((acc, d) => acc + d.saldoPendiente, 0);
   const totalInversiones = misInversiones.reduce((acc, i) => acc + i.inversion, 0);
-  const gananciaEsperadaTotal = misInversiones.reduce((acc, i) => acc + i.gananciaEsperada, 0);
   const balanceNeto = totalPorCobrar - totalPorPagar;
-  const ingresosMensuales = misClientes.reduce((acc, c) => acc + (c.estado === 'Activo' ? c.cuotaMensual : 0), 0);
+  const ingresosMensuales = misClientes.reduce((acc, c) => acc + (c.estado === 'En Proceso' ? c.cuotaMensual : 0), 0);
   const gastosMensuales = misDeudas.reduce((acc, d) => acc + (d.estado === 'Activo' ? d.cuotaMensual : 0), 0);
   const flujoMensual = ingresosMensuales - gastosMensuales;
+  const recursosDisponibles = totalPorCobrar + totalInversiones;
+  const cobertura = totalPorPagar > 0 ? (recursosDisponibles / totalPorPagar) * 100 : 100;
 
   // Funciones principales
-  const agregarCliente = () => {
-    if (!formData.nombre || !formData.capital) {
-      alert('❌ Complete nombre y capital');
-      return;
-    }
-
-    const capital = parseFloat(formData.capital);
-    const cuotaMensual = capital * 0.063;
-    const totalCobrar = capital * 1.14;
-    
-    const nuevoCliente = {
-      id: Date.now(),
-      nombre: formData.nombre,
-      email: formData.email || '',
-      telefono: formData.telefono || '',
-      capital: capital,
-      cuotaMensual: cuotaMensual,
-      totalCobrar: totalCobrar,
-      saldoPendiente: totalCobrar,
-      pagosRecibidos: 0,
-      estado: 'Activo',
-      fechaInicio: new Date().toISOString().split('T')[0],
-      historialPagos: []
-    };
-    
-    setMisClientes([...misClientes, nuevoCliente]);
-    agregarMovimiento('Egreso', 'Préstamo Otorgado', `Préstamo a ${nuevoCliente.nombre}`, capital);
-    setFormData({});
-    setShowModal('');
-    alert('✅ Cliente agregado exitosamente');
+  const eliminarAlerta = (alertaId) => {
+    setAlertas(alertas.filter(a => a.id !== alertaId));
   };
 
-  const agregarDeuda = () => {
-    if (!formData.acreedor || !formData.capital) {
-      alert('❌ Complete acreedor y capital');
-      return;
+  const eliminarCliente = (clienteId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar este cliente?')) {
+      setMisClientes(misClientes.filter(c => c.id !== clienteId));
+      alert('✅ Cliente eliminado correctamente');
     }
-
-    const capital = parseFloat(formData.capital);
-    const nuevaDeuda = {
-      id: Date.now(),
-      acreedor: formData.acreedor,
-      capital: capital,
-      cuotaMensual: capital * 0.063,
-      saldoPendiente: capital * 1.14,
-      estado: 'Activo',
-      proximoPago: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]
-    };
-    
-    setMisDeudas([...misDeudas, nuevaDeuda]);
-    agregarMovimiento('Ingreso', 'Préstamo Recibido', `Préstamo de ${nuevaDeuda.acreedor}`, capital);
-    setFormData({});
-    setShowModal('');
-    alert('✅ Deuda agregada exitosamente');
   };
 
-  const agregarInversion = () => {
-    if (!formData.nombre || !formData.inversion) {
-      alert('❌ Complete nombre e inversión');
-      return;
+  const eliminarDeuda = (deudaId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta deuda?')) {
+      setMisDeudas(misDeudas.filter(d => d.id !== deudaId));
+      alert('✅ Deuda eliminada correctamente');
     }
-
-    const inversion = parseFloat(formData.inversion);
-    const ganancia = parseFloat(formData.ganancia) || 0;
-    const roi = ganancia > 0 ? ((ganancia / inversion) * 100) : 0;
-    
-    const nuevaInversion = {
-      id: Date.now(),
-      nombre: formData.nombre,
-      tipo: 'Importación',
-      inversion: inversion,
-      gananciaEsperada: ganancia,
-      estado: 'En Proceso',
-      roi: Math.round(roi * 10) / 10,
-      progreso: 0
-    };
-    
-    setMisInversiones([...misInversiones, nuevaInversion]);
-    agregarMovimiento('Egreso', 'Inversión', `Inversión en ${nuevaInversion.nombre}`, inversion);
-    setFormData({});
-    setShowModal('');
-    alert('✅ Inversión agregada exitosamente');
   };
 
-  const agregarMovimiento = (tipo, categoria, descripcion, monto, cliente = null) => {
-    const nuevoMovimiento = {
-      id: Date.now(),
-      fecha: new Date().toISOString().split('T')[0],
-      tipo,
-      categoria,
-      descripcion,
-      monto,
-      cliente,
-      metodo: 'Manual'
-    };
-    setMovimientos([...movimientos, nuevoMovimiento]);
+  const eliminarInversion = (inversionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta inversión?')) {
+      setMisInversiones(misInversiones.filter(i => i.id !== inversionId));
+      alert('✅ Inversión eliminada correctamente');
+    }
   };
 
-  const registrarPago = () => {
-    if (!pagoData.monto || !clienteSeleccionado) {
-      alert('❌ Complete todos los campos');
-      return;
+  const eliminarMovimiento = (movimientoId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar este movimiento?')) {
+      setMovimientos(movimientos.filter(m => m.id !== movimientoId));
+      alert('✅ Movimiento eliminado correctamente');
     }
-
-    const monto = parseFloat(pagoData.monto);
-    if (monto <= 0) {
-      alert('❌ El monto debe ser mayor a 0');
-      return;
-    }
-
-    const nuevoPago = {
-      id: Date.now(),
-      fecha: pagoData.fecha,
-      monto: monto,
-      metodo: pagoData.metodo
-    };
-
-    const clientesActualizados = misClientes.map(cliente => {
-      if (cliente.id === clienteSeleccionado.id) {
-        const nuevoSaldo = cliente.saldoPendiente - monto;
-        const nuevosHistorial = [...cliente.historialPagos, nuevoPago];
-        const nuevoEstado = nuevoSaldo <= 0 ? 'Pagado' : 'Activo';
-
-        return {
-          ...cliente,
-          saldoPendiente: Math.max(0, nuevoSaldo),
-          pagosRecibidos: cliente.pagosRecibidos + monto,
-          historialPagos: nuevosHistorial,
-          estado: nuevoEstado
-        };
-      }
-      return cliente;
-    });
-
-    setMisClientes(clientesActualizados);
-    agregarMovimiento('Ingreso', 'Pago Cliente', `Pago de ${clienteSeleccionado.nombre}`, monto, clienteSeleccionado.nombre);
-    
-    setPagoData({ monto: '', fecha: new Date().toISOString().split('T')[0], metodo: 'Transferencia', nota: '' });
-    setShowRegistrarPago(false);
-    alert('✅ ¡PAGO REGISTRADO!');
   };
 
-  const editarCliente = () => {
-    if (!formData.nombre || !formData.capital) {
-      alert('❌ Complete los campos requeridos');
-      return;
+  const eliminarInteraccion = (interaccionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta actividad?')) {
+      setInteracciones(interacciones.filter(i => i.id !== interaccionId));
+      alert('✅ Actividad eliminada correctamente');
     }
-
-    const clientesActualizados = misClientes.map(cliente => {
-      if (cliente.id === clienteSeleccionado.id) {
-        return {
-          ...cliente,
-          nombre: formData.nombre,
-          email: formData.email || '',
-          telefono: formData.telefono || '',
-          capital: parseFloat(formData.capital)
-        };
-      }
-      return cliente;
-    });
-
-    setMisClientes(clientesActualizados);
-    setFormData({});
-    setShowEditarCliente(false);
-    alert('✅ Cliente actualizado');
   };
 
-  // Funciones de exportación
-  const descargarExcel = () => {
-    const reporte = [
-      ['REPORTE FINANCIERO GRIZALUM'],
-      ['Fecha:', new Date().toLocaleDateString()],
-      [''],
-      ['RESUMEN'],
-      ['Total por Cobrar:', `S/ ${totalPorCobrar.toLocaleString()}`],
-      ['Total por Pagar:', `S/ ${totalPorPagar.toLocaleString()}`],
-      ['Balance Neto:', `S/ ${balanceNeto.toLocaleString()}`],
-      [''],
-      ['CLIENTES'],
-      ['Nombre', 'Capital', 'Saldo', 'Estado'],
-      ...misClientes.map(c => [c.nombre, c.capital, c.saldoPendiente, c.estado]),
-      [''],
-      ['DEUDAS'],
-      ['Acreedor', 'Capital', 'Saldo'],
-      ...misDeudas.map(d => [d.acreedor, d.capital, d.saldoPendiente])
-    ];
-
-    const csvContent = reporte.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `GRIZALUM_Reporte_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    alert('📊 Reporte descargado');
+  const guardarDatos = () => {
+    setDatosGuardados(true);
+    alert('💾 ¡Datos guardados exitosamente!');
+    setTimeout(() => setDatosGuardados(false), 3000);
   };
 
   const compartirWhatsApp = () => {
     const mensaje = `🏢 GRIZALUM - Resumen Financiero
 📅 ${new Date().toLocaleDateString()}
 
-💰 BALANCE:
+💰 SITUACIÓN FINANCIERA:
 • Me deben: S/ ${totalPorCobrar.toLocaleString()}
 • Yo debo: S/ ${totalPorPagar.toLocaleString()}
 • Balance neto: S/ ${balanceNeto.toLocaleString()}
+• Cobertura: ${Math.round(cobertura)}%
 
-📊 CLIENTES: ${misClientes.length} activos
-💸 DEUDAS: ${misDeudas.length} pendientes
-🚀 INVERSIONES: ${misInversiones.length} proyectos`;
+📈 CARTERA:
+• Clientes activos: ${misClientes.filter(c => c.estado === 'En Proceso').length}
+• Deudas pendientes: ${misDeudas.filter(d => d.estado === 'Activo').length}
+• Inversiones activas: ${misInversiones.filter(i => i.estado === 'En Proceso').length}`;
 
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* SIDEBAR */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
-        <div className="flex items-center justify-between p-4 lg:p-6 border-b border-slate-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg lg:text-xl">G</span>
-            </div>
-            <div>
-              <h1 className="text-lg lg:text-xl font-bold">GRIZALUM</h1>
-              <p className="text-xs text-slate-300">Control Financiero</p>
-            </div>
-          </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="mt-6 space-y-1">
-          {[
-            { id: 'resumen', label: 'Resumen', icon: Home },
-            { id: 'clientes', label: 'Clientes', icon: TrendingUp },
-            { id: 'deudas', label: 'Deudas', icon: TrendingDown },
-            { id: 'inversiones', label: 'Inversiones', icon: Building },
-            { id: 'movimientos', label: 'Movimientos', icon: Calendar },
-            { id: 'alertas', label: 'Alertas', icon: Bell }
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => { setCurrentView(item.id); setSidebarOpen(false); }}
-              className={`w-full flex items-center px-4 lg:px-6 py-3 text-left text-sm lg:text-base transition-all ${
-                currentView === item.id 
-                  ? 'bg-blue-600 border-r-4 border-blue-400' 
-                  : 'hover:bg-slate-700'
-              }`}
-            >
-              <item.icon className="mr-3" size={18} />
-              {item.label}
-              {item.id === 'alertas' && alertas.length > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {alertas.length}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-6 left-4 right-4 lg:left-6 lg:right-6">
-          <div className="bg-slate-700 rounded-lg p-3 lg:p-4">
-            <h4 className="font-semibold mb-2 text-xs lg:text-sm">💡 Balance</h4>
-            <p className={`text-lg lg:text-xl font-bold ${balanceNeto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              S/{balanceNeto.toLocaleString()}
-            </p>
-            <p className="text-xs text-slate-300 mt-1">
-              {balanceNeto >= 0 ? '✅ Positivo' : '⚠️ Negativo'}
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative">
+      {/* MARCA DE AGUA - LOGO GRIZALUM */}
+      <div 
+        className="fixed inset-0 z-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg%3E%3Ccircle cx='200' cy='150' r='80' fill='none' stroke='%23FF4500' stroke-width='12'/%3E%3Cg fill='%23000000'%3E%3Ccircle cx='200' cy='120' r='20'/%3E%3Crect x='180' y='140' width='40' height='60' rx='8'/%3E%3Crect x='155' y='150' width='20' height='8' rx='4' transform='rotate(-30 165 154)'/%3E%3Crect x='225' y='150' width='20' height='8' rx='4' transform='rotate(30 235 154)'/%3E%3Crect x='185' y='200' width='12' height='30' rx='6'/%3E%3Crect x='203' y='200' width='12' height='30' rx='6'/%3E%3Cline x1='245' y1='150' x2='270' y2='130' stroke='%23000000' stroke-width='6' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='50' cy='180' r='25' fill='%23000000'/%3E%3Ccircle cx='50' cy='180' r='15' fill='%23FF4500'/%3E%3Cline x1='30' y1='250' x2='370' y2='250' stroke='%23000000' stroke-width='8'/%3E%3Cline x1='60' y1='270' x2='90' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Cline x1='110' y1='270' x2='140' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Cline x1='160' y1='270' x2='190' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Cline x1='210' y1='270' x2='240' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Cline x1='260' y1='270' x2='290' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Cline x1='310' y1='270' x2='340' y2='270' stroke='%23000000' stroke-width='6'/%3E%3Ctext x='200' y='320' text-anchor='middle' font-family='Arial Black, sans-serif' font-size='42' font-weight='900' fill='%23000000'%3EGRIZALUM%3C/text%3E%3Cline x1='80' y1='335' x2='320' y2='335' stroke='%23000000' stroke-width='4'/%3E%3Ctext x='200' y='355' text-anchor='middle' font-family='Arial, sans-serif' font-size='16' font-weight='normal' fill='%23000000'%3ECOMPAÑÍA METALÚRGICA%3C/text%3E%3Cline x1='80' y1='365' x2='320' y2='365' stroke='%23000000' stroke-width='4'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '350px 350px',
+          backgroundPosition: 'center'
+        }}
+      />
+      
       {/* CONTENIDO PRINCIPAL */}
-      <div className="lg:ml-64">
-        {/* HEADER MÓVIL */}
-        <div className="lg:hidden bg-white shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
-              <Menu size={24} />
+      <div className="relative z-10">
+        {/* SIDEBAR */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
+          <div className="flex items-center justify-between p-4 lg:p-6 border-b border-slate-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg lg:text-xl">G</span>
+              </div>
+              <div>
+                <h1 className="text-lg lg:text-xl font-bold">GRIZALUM</h1>
+                <p className="text-xs text-slate-300">Control Financiero Pro</p>
+              </div>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
+              <X size={20} />
             </button>
-            <h1 className="text-xl font-bold text-gray-800">GRIZALUM</h1>
-            <button onClick={() => setShowCompartir(true)} className="text-blue-600">
-              <Share2 size={24} />
-            </button>
+          </div>
+
+          <nav className="mt-6 space-y-1">
+            {[
+              { id: 'resumen', label: 'Resumen', icon: Home },
+              { id: 'clientes', label: 'Clientes', icon: TrendingUp },
+              { id: 'deudas', label: 'Deudas', icon: TrendingDown },
+              { id: 'inversiones', label: 'Inversiones', icon: Building },
+              { id: 'movimientos', label: 'Movimientos', icon: Calendar },
+              { id: 'alertas', label: 'Alertas', icon: Bell },
+              { id: 'interacciones', label: 'Actividad', icon: History }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => { setCurrentView(item.id); setSidebarOpen(false); }}
+                className={`w-full flex items-center px-4 lg:px-6 py-3 text-left text-sm lg:text-base transition-all ${
+                  currentView === item.id 
+                    ? 'bg-blue-600 border-r-4 border-blue-400' 
+                    : 'hover:bg-slate-700'
+                }`}
+              >
+                <item.icon className="mr-3" size={18} />
+                {item.label}
+                {item.id === 'alertas' && alertas.filter(a => a.activa).length > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {alertas.filter(a => a.activa).length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          <div className="absolute bottom-6 left-4 right-4 lg:left-6 lg:right-6">
+            <div className="bg-slate-700 rounded-lg p-3 lg:p-4">
+              <h4 className="font-semibold mb-2 text-xs lg:text-sm">💡 Balance Neto</h4>
+              <p className={`text-lg lg:text-xl font-bold ${balanceNeto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                S/{balanceNeto.toLocaleString()}
+              </p>
+              <div className="mt-2 text-xs">
+                <div className="flex justify-between text-slate-300">
+                  <span>Cobertura:</span>
+                  <span className={cobertura >= 100 ? 'text-green-400' : 'text-yellow-400'}>
+                    {Math.round(cobertura)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-600 rounded-full h-1 mt-1">
+                  <div 
+                    className={`h-1 rounded-full ${cobertura >= 100 ? 'bg-green-400' : 'bg-yellow-400'}`}
+                    style={{ width: `${Math.min(cobertura, 100)}%` }}
+                  />
+                </div>
+              </div>
+              {datosGuardados && (
+                <div className="mt-2 flex items-center text-green-400 text-xs">
+                  <CheckCircle size={12} className="mr-1" />
+                  Guardado
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="p-4 lg:p-6">
-          {/* BOTONES DE ACCIÓN */}
-          <div className="mb-6 bg-white rounded-2xl shadow-xl p-3 lg:p-4">
-            <div className="flex flex-wrap gap-2 lg:gap-3 justify-center lg:justify-end">
-              <button
-                onClick={compartirWhatsApp}
-                className="bg-green-500 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center text-sm lg:text-base"
-              >
-                <MessageSquare className="mr-1 lg:mr-2" size={16} />
-                WhatsApp
+        {/* CONTENIDO PRINCIPAL */}
+        <div className="lg:ml-64">
+          {/* HEADER MÓVIL */}
+          <div className="lg:hidden bg-white shadow-sm p-4">
+            <div className="flex items-center justify-between">
+              <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
+                <Menu size={24} />
               </button>
-              <button
-                onClick={() => alert('Datos guardados')}
-                className="bg-purple-500 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center text-sm lg:text-base"
-              >
-                <Cloud className="mr-1 lg:mr-2" size={16} />
-                Guardar
-              </button>
-              <button
-                onClick={descargarExcel}
-                className="bg-green-600 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-700 transition-all flex items-center text-sm lg:text-base"
-              >
-                <FileSpreadsheet className="mr-1 lg:mr-2" size={16} />
-                Excel
+              <h1 className="text-xl font-bold text-gray-800">GRIZALUM</h1>
+              <button onClick={compartirWhatsApp} className="text-blue-600">
+                <Share2 size={24} />
               </button>
             </div>
           </div>
 
-          {/* SEGURIDAD */}
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="text-green-600" size={24} />
-              <div>
-                <h4 className="font-semibold text-green-800">🔒 Datos Seguros</h4>
-                <p className="text-sm text-green-700">Tu información está protegida y es completamente privada.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* RESUMEN */}
-          {currentView === 'resumen' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Situación Financiera</h1>
-                <p className="text-gray-600">Control completo de ingresos, gastos e inversiones</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-sm">Me Deben</p>
-                      <p className="text-2xl lg:text-3xl font-bold">S/{totalPorCobrar.toLocaleString()}</p>
-                      <p className="text-green-200 text-xs">{misClientes.length} clientes</p>
-                    </div>
-                    <TrendingUp size={28} className="text-green-200" />
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-red-100 text-sm">Yo Debo</p>
-                      <p className="text-2xl lg:text-3xl font-bold">S/{totalPorPagar.toLocaleString()}</p>
-                      <p className="text-red-200 text-xs">{misDeudas.length} deudas</p>
-                    </div>
-                    <TrendingDown size={28} className="text-red-200" />
-                  </div>
-                </div>
-
-                <div className={`bg-gradient-to-r ${balanceNeto >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600'} text-white p-4 lg:p-6 rounded-2xl shadow-lg`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white text-opacity-80 text-sm">Balance Neto</p>
-                      <p className="text-2xl lg:text-3xl font-bold">S/{balanceNeto.toLocaleString()}</p>
-                      <p className="text-white text-opacity-80 text-xs">
-                        {balanceNeto >= 0 ? 'A favor' : 'En contra'}
-                      </p>
-                    </div>
-                    <DollarSign size={28} className="text-white text-opacity-60" />
-                  </div>
-                </div>
-
-                <div className={`bg-gradient-to-r ${flujoMensual >= 0 ? 'from-purple-500 to-purple-600' : 'from-yellow-500 to-yellow-600'} text-white p-4 lg:p-6 rounded-2xl shadow-lg`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white text-opacity-80 text-sm">Flujo Mensual</p>
-                      <p className="text-2xl lg:text-3xl font-bold">S/{flujoMensual.toLocaleString()}</p>
-                      <p className="text-white text-opacity-80 text-xs">
-                        {flujoMensual >= 0 ? 'Ganancia' : 'Déficit'}
-                      </p>
-                    </div>
-                    <Calculator size={28} className="text-white text-opacity-60" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* CLIENTES */}
-          {currentView === 'clientes' && (
-            <div className="space-y-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Mis Clientes</h2>
-                  <p className="text-gray-600">Gestiona préstamos y pagos</p>
-                </div>
-                <button 
-                  onClick={() => setShowModal('cliente')}
-                  className="bg-green-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl hover:bg-green-600 transition-all flex items-center"
+          <div className="p-4 lg:p-6">
+            {/* BOTONES DE ACCIÓN */}
+            <div className="mb-6 bg-white rounded-2xl shadow-xl p-3 lg:p-4">
+              <div className="flex flex-wrap gap-2 lg:gap-3 justify-center lg:justify-end">
+                <button
+                  onClick={compartirWhatsApp}
+                  className="bg-green-500 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center text-sm lg:text-base"
                 >
-                  <Plus className="mr-2" size={20} />
-                  Nuevo Cliente
+                  <MessageSquare className="mr-1 lg:mr-2" size={16} />
+                  WhatsApp
+                </button>
+                <button
+                  onClick={guardarDatos}
+                  className={`${datosGuardados ? 'bg-green-600' : 'bg-purple-500'} text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center text-sm lg:text-base`}
+                  disabled={datosGuardados}
+                >
+                  {datosGuardados ? <CheckCircle className="mr-1 lg:mr-2" size={16} /> : <Save className="mr-1 lg:mr-2" size={16} />}
+                  {datosGuardados ? 'Guardado' : 'Guardar'}
+                </button>
+                <button
+                  onClick={() => alert('📊 Función de Excel próximamente')}
+                  className="bg-green-600 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-700 transition-all flex items-center text-sm lg:text-base"
+                >
+                  <FileSpreadsheet className="mr-1 lg:mr-2" size={16} />
+                  Excel
                 </button>
               </div>
+            </div>
 
-              {/* Vista móvil */}
-              <div className="lg:hidden space-y-4">
-                {misClientes.map(cliente => {
-                  const progreso = Math.round((cliente.pagosRecibidos / cliente.totalCobrar) * 100);
-                  return (
-                    <div key={cliente.id} className="bg-white rounded-2xl shadow-xl p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-bold text-lg text-gray-800">{cliente.nombre}</h3>
-                          <p className="text-sm text-gray-600">{cliente.telefono}</p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          cliente.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {cliente.estado}
-                        </span>
+            {/* SEGURIDAD */}
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4">
+              <div className="flex items-center space-x-3">
+                <Shield className="text-green-600" size={24} />
+                <div>
+                  <h4 className="font-semibold text-green-800">🔒 Datos Seguros</h4>
+                  <p className="text-sm text-green-700">Tu información está protegida y es completamente privada.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* RESUMEN CON GRÁFICOS PROFESIONALES */}
+            {currentView === 'resumen' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Dashboard Financiero Profesional</h1>
+                  <p className="text-gray-600">Análisis completo con métricas avanzadas y visualizaciones</p>
+                </div>
+                
+                {/* MÉTRICAS PRINCIPALES */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-100 text-sm">💰 Por Cobrar</p>
+                        <p className="text-2xl lg:text-3xl font-bold">S/{totalPorCobrar.toLocaleString()}</p>
+                        <p className="text-green-200 text-xs mt-1">{misClientes.filter(c => c.estado === 'En Proceso').length} clientes activos</p>
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-xs text-gray-500">Capital</p>
-                          <p className="font-semibold">S/{cliente.capital.toLocaleString()}</p>
+                      <TrendingUp size={28} className="text-green-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-red-100 text-sm">💸 Por Pagar</p>
+                        <p className="text-2xl lg:text-3xl font-bold">S/{totalPorPagar.toLocaleString()}</p>
+                        <p className="text-red-200 text-xs mt-1">{misDeudas.filter(d => d.estado === 'Activo').length} deudas activas</p>
+                      </div>
+                      <TrendingDown size={28} className="text-red-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-100 text-sm">📊 Balance Neto</p>
+                        <p className="text-2xl lg:text-3xl font-bold">S/{balanceNeto.toLocaleString()}</p>
+                        <p className="text-blue-200 text-xs mt-1">{balanceNeto >= 0 ? 'Posición favorable' : 'Requiere atención'}</p>
+                      </div>
+                      <DollarSign size={28} className="text-blue-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 lg:p-6 rounded-2xl shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-100 text-sm">🛡️ Cobertura</p>
+                        <p className="text-2xl lg:text-3xl font-bold">{Math.round(cobertura)}%</p>
+                        <p className="text-purple-200 text-xs mt-1">{cobertura >= 100 ? 'Excelente' : 'Mejorar'}</p>
+                      </div>
+                      <Calculator size={28} className="text-purple-200" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* GRÁFICO PROFESIONAL AVANZADO */}
+                <div className="bg-white rounded-2xl shadow-xl p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Análisis Financiero Avanzado</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    {/* Gráfico de barras simulado - Flujo de Caja */}
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-4 rounded-xl">
+                      <h4 className="font-semibold mb-4 text-center">💰 Flujo de Caja Mensual</h4>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 w-16">Ingresos</span>
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="flex-1 bg-green-200 rounded-full h-6 relative overflow-hidden">
+                              <div className="bg-gradient-to-r from-green-400 to-green-600 h-6 rounded-full shadow-sm" style={{width: '85%'}}></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                85%
+                              </div>
+                            </div>
+                            <span className="text-sm font-bold text-green-600 w-20 text-right">
+                              S/{ingresosMensuales.toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-500">Saldo</p>
-                          <p className="font-semibold text-blue-600">S/{cliente.saldoPendiente.toLocaleString()}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 w-16">Gastos</span>
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="flex-1 bg-red-200 rounded-full h-6 relative overflow-hidden">
+                              <div className="bg-gradient-to-r from-red-400 to-red-600 h-6 rounded-full shadow-sm" style={{width: '60%'}}></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                60%
+                              </div>
+                            </div>
+                            <span className="text-sm font-bold text-red-600 w-20 text-right">
+                              S/{gastosMensuales.toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="col-span-2">
-                          <p className="text-xs text-gray-500 mb-1">Progreso {progreso}%</p>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${progreso}%` }}
-                            ></div>
+                        <div className="flex items-center justify-between border-t pt-3 mt-3">
+                          <span className="text-sm font-bold text-gray-800 w-16">Flujo Neto</span>
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div className="flex-1 bg-blue-200 rounded-full h-6 relative overflow-hidden">
+                              <div className={`h-6 rounded-full shadow-sm ${flujoMensual >= 0 ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`} style={{width: '75%'}}></div>
+                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                {flujoMensual >= 0 ? 'POSITIVO' : 'NEGATIVO'}
+                              </div>
+                            </div>
+                            <span className={`text-sm font-bold w-20 text-right ${flujoMensual >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                              S/{flujoMensual.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => {
-                            setClienteSeleccionado(cliente);
-                            setPagoData({...pagoData, monto: cliente.cuotaMensual.toString()});
-                            setShowRegistrarPago(true);
-                          }}
-                          className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 flex items-center justify-center"
-                          disabled={cliente.estado === 'Pagado'}
-                        >
-                          <DollarSign size={16} className="mr-1" />
-                          Pagar
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setClienteSeleccionado(cliente);
-                            setFormData({
-                              nombre: cliente.nombre,
-                              email: cliente.email,
-                              telefono: cliente.telefono,
-                              capital: cliente.capital.toString()
-                            });
-                            setShowEditarCliente(true);
-                          }}
-                          className="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700"
-                        >
-                          <Edit size={16} />
-                        </button>
+                    </div>
+
+                    {/* Gráfico circular simulado - Distribución */}
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl">
+                      <h4 className="font-semibold mb-4 text-center">🎯 Distribución de Recursos</h4>
+                      <div className="relative">
+                        {/* Círculo principal simulado */}
+                        <div className="w-32 h-32 mx-auto mb-4 relative">
+                          <div className="w-full h-full rounded-full border-8 border-blue-500" style={{
+                            background: `conic-gradient(#3B82F6 0deg ${(totalPorCobrar / (totalPorCobrar + totalInversiones)) * 360}deg, #8B5CF6 ${(totalPorCobrar / (totalPorCobrar + totalInversiones)) * 360}deg 360deg)`
+                          }}></div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
+                              <span className="text-xs font-bold text-gray-700">100%</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Leyenda */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Por Cobrar</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-bold text-blue-600">
+                                {Math.round((totalPorCobrar / (totalPorCobrar + totalInversiones)) * 100)}%
+                              </span>
+                              <p className="text-xs text-gray-500">S/{totalPorCobrar.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Inversiones</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-bold text-purple-600">
+                                {Math.round((totalInversiones / (totalPorCobrar + totalInversiones)) * 100)}%
+                              </span>
+                              <p className="text-xs text-gray-500">S/{totalInversiones.toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
 
-              {/* Vista desktop */}
-              <div className="hidden lg:block bg-white rounded-2xl shadow-xl overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Cliente</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Capital</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Saldo</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Progreso</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Estado</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {misClientes.map(cliente => {
-                      const progreso = Math.round((cliente.pagosRecibidos / cliente.totalCobrar) * 100);
-                      return (
-                        <tr key={cliente.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <p className="font-semibold text-gray-900">{cliente.nombre}</p>
-                              <p className="text-sm text-gray-600">{cliente.email}</p>
-                              <p className="text-xs text-gray-500">📱 {cliente.telefono}</p>
+                  {/* KPIs Adicionales */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl text-center">
+                      <h5 className="text-sm font-semibold opacity-90">ROI Promedio</h5>
+                      <p className="text-2xl font-bold">
+                        {misInversiones.length > 0 
+                          ? (misInversiones.reduce((acc, inv) => acc + inv.roi, 0) / misInversiones.length).toFixed(1)
+                          : '0'}%
+                      </p>
+                      <p className="text-xs opacity-75">En inversiones activas</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-xl text-center">
+                      <h5 className="text-sm font-semibold opacity-90">Eficiencia de Cobro</h5>
+                      <p className="text-2xl font-bold">
+                        {misClientes.length > 0 
+                          ? Math.round((misClientes.reduce((acc, c) => acc + c.pagosRecibidos, 0) / misClientes.reduce((acc, c) => acc + c.totalCobrar, 0)) * 100)
+                          : '0'}%
+                      </p>
+                      <p className="text-xs opacity-75">Del total a cobrar</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-rose-500 to-rose-600 text-white p-4 rounded-xl text-center">
+                      <h5 className="text-sm font-semibold opacity-90">Apalancamiento</h5>
+                      <p className="text-2xl font-bold">
+                        {totalPorPagar > 0 
+                          ? ((totalPorCobrar + totalInversiones) / totalPorPagar).toFixed(1)
+                          : '∞'}x
+                      </p>
+                      <p className="text-xs opacity-75">Activos vs Pasivos</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ALERTAS RÁPIDAS */}
+                {alertas.filter(a => a.activa).length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                    <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Alertas Importantes</h4>
+                    <div className="space-y-2">
+                      {alertas.filter(a => a.activa).slice(0, 3).map(alerta => (
+                        <div key={alerta.id} className="flex items-center justify-between text-sm">
+                          <span className="text-yellow-700">{alerta.mensaje}</span>
+                          <button 
+                            onClick={() => eliminarAlerta(alerta.id)}
+                            className="text-yellow-600 hover:text-yellow-800"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* VISTA CLIENTES CON PROGRESO DE PAGOS */}
+            {currentView === 'clientes' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">💰 Mis Clientes</h2>
+                    <button 
+                      onClick={() => alert('Función próximamente')}
+                      className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nuevo Cliente
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {misClientes.map(cliente => (
+                      <div key={cliente.id} className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">{cliente.nombre}</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
+                              <div>
+                                <p className="text-sm text-gray-600">Capital Prestado</p>
+                                <p className="font-semibold">S/{cliente.capital.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Saldo Pendiente</p>
+                                <p className="font-semibold text-red-600">S/{cliente.saldoPendiente.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Cuota Mensual</p>
+                                <p className="font-semibold text-blue-600">S/{cliente.cuotaMensual.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Progreso de Pagos</p>
+                                <p className="font-semibold text-purple-600">
+                                  {cliente.historialPagos.length} / {cliente.plazoMeses}
+                                </p>
+                                <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                  <div 
+                                    className="bg-purple-500 h-2 rounded-full transition-all"
+                                    style={{width: `${(cliente.historialPagos.length / cliente.plazoMeses) * 100}%`}}
+                                  ></div>
+                                </div>
+                                {cliente.historialPagos.length >= cliente.plazoMeses && (
+                                  <span className="text-xs text-green-600 font-semibold">✅ PAGADO COMPLETO</span>
+                                )}
+                              </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 font-semibold">S/{cliente.capital.toLocaleString()}</td>
-                          <td className="px-6 py-4 font-semibold text-blue-600">S/{cliente.saldoPendiente.toLocaleString()}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                            <div className="mt-3 flex items-center space-x-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                cliente.estado === 'En Proceso' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                {cliente.estado}
+                              </span>
+                              <span className="text-sm text-gray-600">Tasa: {cliente.tasaInteres}%</span>
+                              <span className="text-sm text-gray-600">Plazo: {cliente.plazoMeses} meses</span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Registrar pago próximamente')}
+                              className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-all"
+                            >
+                              <DollarSign size={16} />
+                            </button>
+                            <button 
+                              onClick={() => alert('Editar cliente próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarCliente(cliente.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VISTA DEUDAS */}
+            {currentView === 'deudas' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">💸 Mis Deudas</h2>
+                    <button 
+                      onClick={() => alert('Función próximamente')}
+                      className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nueva Deuda
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {misDeudas.map(deuda => (
+                      <div key={deuda.id} className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">{deuda.acreedor}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{deuda.descripcion}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Capital Original</p>
+                                <p className="font-semibold">S/{deuda.capital.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Saldo Pendiente</p>
+                                <p className="font-semibold text-red-600">S/{deuda.saldoPendiente.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Cuota Mensual</p>
+                                <p className="font-semibold text-orange-600">S/{deuda.cuotaMensual.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex items-center space-x-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                deuda.estado === 'Activo' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {deuda.estado}
+                              </span>
+                              <span className="text-sm text-gray-600">Tipo: {deuda.tipo}</span>
+                              <span className="text-sm text-gray-600">Próximo pago: {deuda.proximoPago}</span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar deuda próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarDeuda(deuda.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VISTA INVERSIONES */}
+            {currentView === 'inversiones' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">🏢 Mis Inversiones</h2>
+                    <button 
+                      onClick={() => alert('Función próximamente')}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nueva Inversión
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {misInversiones.map(inversion => (
+                      <div key={inversion.id} className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">{inversion.nombre}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{inversion.descripcion}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Inversión</p>
+                                <p className="font-semibold">S/{inversion.inversion.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Ganancia Esperada</p>
+                                <p className="font-semibold text-green-600">S/{inversion.gananciaEsperada.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Ganancia Actual</p>
+                                <p className="font-semibold text-blue-600">S/{inversion.gananciaActual.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">ROI</p>
+                                <p className="font-semibold text-purple-600">{inversion.roi.toFixed(1)}%</p>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Progreso</span>
+                                <span>{inversion.progreso}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
-                                  className="bg-green-500 h-2 rounded-full"
-                                  style={{ width: `${progreso}%` }}
+                                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                                  style={{width: `${inversion.progreso}%`}}
                                 ></div>
                               </div>
-                              <span className="text-sm font-medium">{progreso}%</span>
                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                              cliente.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {cliente.estado}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex space-x-2">
-                              <button 
-                                onClick={() => {
-                                  setClienteSeleccionado(cliente);
-                                  setPagoData({...pagoData, monto: cliente.cuotaMensual.toString()});
-                                  setShowRegistrarPago(true);
-                                }}
-                                className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700"
-                                disabled={cliente.estado === 'Pagado'}
-                              >
-                                <DollarSign size={16} />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setClienteSeleccionado(cliente);
-                                  setFormData({
-                                    nombre: cliente.nombre,
-                                    email: cliente.email,
-                                    telefono: cliente.telefono,
-                                    capital: cliente.capital.toString()
-                                  });
-                                  setShowEditarCliente(true);
-                                }}
-                                className="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700"
-                              >
-                                <Edit size={16} />
-                              </button>
+                            <div className="mt-3 flex items-center space-x-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                inversion.estado === 'En Proceso' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                {inversion.estado}
+                              </span>
+                              <span className="text-sm text-gray-600">Tipo: {inversion.tipo}</span>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* DEUDAS */}
-          {currentView === 'deudas' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Mis Deudas</h2>
-                  <p className="text-gray-600">Obligaciones que debo pagar</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar inversión próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarInversion(inversion.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setShowModal('deuda')}
-                  className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 flex items-center"
-                >
-                  <Plus className="mr-2" size={20} />
-                  Nueva Deuda
-                </button>
               </div>
+            )}
 
-              <div className="grid grid-cols-1 gap-4">
-                {misDeudas.map(deuda => (
-                  <div key={deuda.id} className="bg-white rounded-2xl shadow-xl p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-bold text-lg text-gray-800">{deuda.acreedor}</h3>
-                        <p className="text-sm text-gray-600">Próximo pago: {deuda.proximoPago}</p>
-                      </div>
-                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">
-                        {deuda.estado}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500">Capital</p>
-                        <p className="font-semibold">S/{deuda.capital.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Saldo Pendiente</p>
-                        <p className="font-semibold text-red-600">S/{deuda.saldoPendiente.toLocaleString()}</p>
-                      </div>
-                    </div>
+            {/* VISTA MOVIMIENTOS */}
+            {currentView === 'movimientos' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">📅 Movimientos</h2>
+                    <button 
+                      onClick={() => alert('Función próximamente')}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nuevo Movimiento
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* INVERSIONES */}
-          {currentView === 'inversiones' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Mis Inversiones</h2>
-                  <p className="text-gray-600">Proyectos de inversión</p>
+                  
+                  <div className="grid gap-4">
+                    {movimientos.map(movimiento => (
+                      <div key={movimiento.id} className={`border rounded-xl p-4 ${
+                        movimiento.tipo === 'Ingreso' 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+                          : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'
+                      }`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                movimiento.tipo === 'Ingreso' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {movimiento.tipo}
+                              </span>
+                              <span className="text-sm text-gray-600">{movimiento.fecha}</span>
+                              <span className="text-sm text-gray-600">{movimiento.categoria}</span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{movimiento.descripcion}</h3>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Monto</p>
+                                <p className={`font-bold text-lg ${
+                                  movimiento.tipo === 'Ingreso' ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {movimiento.tipo === 'Ingreso' ? '+' : '-'}S/{movimiento.monto.toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Cliente/Proveedor</p>
+                                <p className="font-semibold">{movimiento.cliente}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Método</p>
+                                <p className="font-semibold">{movimiento.metodo}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar movimiento próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarMovimiento(movimiento.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setShowModal('inversion')}
-                  className="bg-indigo-500 text-white px-4 py-2 rounded-xl hover:bg-indigo-600 flex items-center"
-                >
-                  <Plus className="mr-2" size={20} />
-                  Nueva Inversión
-                </button>
               </div>
+            )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {misInversiones.map(inversion => (
-                  <div key={inversion.id} className="bg-white rounded-2xl shadow-xl p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-800">{inversion.nombre}</h3>
-                        <p className="text-sm text-gray-600">{inversion.tipo}</p>
-                      </div>
-                      <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">
-                        {inversion.estado}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-500">💰 Inversión</p>
-                          <p className="font-bold text-lg">S/{inversion.inversion.toLocaleString()}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500">📈 Ganancia</p>
-                          <p className="font-bold text-lg text-green-600">S/{inversion.gananciaEsperada.toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-gray-500">🎯 ROI: {inversion.roi}%</p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
-                            style={{ width: `${inversion.progreso}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Progreso: {inversion.progreso}%</p>
-                      </div>
-                    </div>
+            {/* VISTA ALERTAS */}
+            {currentView === 'alertas' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">🔔 Alertas</h2>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* MOVIMIENTOS */}
-          {currentView === 'movimientos' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Movimientos</h2>
-              
-              <div className="space-y-4">
-                {movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map(movimiento => (
-                  <div key={movimiento.id} className="bg-white rounded-2xl shadow-xl p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold text-gray-900">{movimiento.descripcion}</p>
-                        <p className="text-sm text-gray-600">{movimiento.categoria}</p>
-                        <p className="text-xs text-gray-500">{new Date(movimiento.fecha).toLocaleDateString()}</p>
+                  
+                  <div className="grid gap-4">
+                    {alertas.map(alerta => (
+                      <div key={alerta.id} className={`border rounded-xl p-4 ${
+                        alerta.urgencia === 'alta' 
+                          ? 'bg-red-50 border-red-200' 
+                          : alerta.urgencia === 'media'
+                          ? 'bg-yellow-50 border-yellow-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                alerta.urgencia === 'alta' 
+                                  ? 'bg-red-100 text-red-800' 
+                                  : alerta.urgencia === 'media'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {alerta.urgencia.toUpperCase()}
+                              </span>
+                              <span className="text-sm text-gray-600">{alerta.tipo}</span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{alerta.mensaje}</h3>
+                            <div className="mt-2 text-sm text-gray-600">
+                              <p>Fecha vencimiento: {alerta.fechaVencimiento}</p>
+                              <p>Creada: {alerta.fechaCreacion}</p>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar alerta próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarAlerta(alerta.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                          movimiento.tipo === 'Ingreso' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {movimiento.tipo}
-                        </span>
-                        <p className={`font-bold text-lg mt-1 ${
-                          movimiento.tipo === 'Ingreso' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {movimiento.tipo === 'Ingreso' ? '+' : '-'}S/{movimiento.monto.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ALERTAS */}
-          {currentView === 'alertas' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Alertas</h2>
-              
-              <div className="space-y-4">
-                {alertas.map(alerta => (
-                  <div key={alerta.id} className="bg-white rounded-2xl shadow-xl p-4 border-l-4 border-yellow-400">
-                    <div className="flex items-center">
-                      <Bell className="text-yellow-500 mr-3" size={20} />
-                      <div>
-                        <p className="font-semibold text-gray-900">{alerta.mensaje}</p>
-                        <p className="text-sm text-gray-600">Urgencia: {alerta.urgencia}</p>
-                      </div>
-                    </div>
+            {/* VISTA ACTIVIDAD */}
+            {currentView === 'interacciones' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">📋 Actividad Reciente</h2>
                   </div>
-                ))}
+                  
+                  <div className="grid gap-4">
+                    {interacciones.map(interaccion => (
+                      <div key={interaccion.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                {interaccion.tipo}
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                {new Date(interaccion.fecha).toLocaleString()}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{interaccion.descripcion}</h3>
+                            <p className="text-sm text-gray-600 mt-1">Usuario: {interaccion.usuario}</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => eliminarInteraccion(interaccion.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+          </div>
         </div>
       </div>
-
-      {/* MODALES */}
-      
-      {/* Modal Nuevo Cliente/Deuda/Inversión */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">
-                {showModal === 'cliente' && '👤 Nuevo Cliente'}
-                {showModal === 'deuda' && '💳 Nueva Deuda'}
-                {showModal === 'inversion' && '🚀 Nueva Inversión'}
-              </h3>
-              <button onClick={() => setShowModal('')}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {showModal === 'cliente' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Nombre completo"
-                    value={formData.nombre || ''}
-                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email || ''}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Teléfono"
-                    value={formData.telefono || ''}
-                    onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                  <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                    <input
-                      type="number"
-                      placeholder="Capital a prestar"
-                      value={formData.capital || ''}
-                      onChange={(e) => setFormData({...formData, capital: e.target.value})}
-                      className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {showModal === 'deuda' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Acreedor (ej: Banco Santander)"
-                    value={formData.acreedor || ''}
-                    onChange={(e) => setFormData({...formData, acreedor: e.target.value})}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                  <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                    <input
-                      type="number"
-                      placeholder="Capital prestado"
-                      value={formData.capital || ''}
-                      onChange={(e) => setFormData({...formData, capital: e.target.value})}
-                      className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {showModal === 'inversion' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Nombre del proyecto"
-                    value={formData.nombre || ''}
-                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                    className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                    <input
-                      type="number"
-                      placeholder="Monto de inversión"
-                      value={formData.inversion || ''}
-                      onChange={(e) => setFormData({...formData, inversion: e.target.value})}
-                      className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                    <input
-                      type="number"
-                      placeholder="Ganancia esperada"
-                      value={formData.ganancia || ''}
-                      onChange={(e) => setFormData({...formData, ganancia: e.target.value})}
-                      className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  if (showModal === 'cliente') agregarCliente();
-                  if (showModal === 'deuda') agregarDeuda();
-                  if (showModal === 'inversion') agregarInversion();
-                }}
-                className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600"
-              >
-                ✅ Guardar
-              </button>
-              <button
-                onClick={() => setShowModal('')}
-                className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Registrar Pago */}
-      {showRegistrarPago && clienteSeleccionado && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">💰 Registrar Pago</h3>
-              <button onClick={() => setShowRegistrarPago(false)}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-xl">
-                <h4 className="font-bold text-blue-800">Cliente: {clienteSeleccionado.nombre}</h4>
-                <p className="text-sm text-blue-600">Saldo: S/{clienteSeleccionado.saldoPendiente.toLocaleString()}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">💵 Monto del Pago</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={pagoData.monto}
-                    onChange={(e) => setPagoData({...pagoData, monto: e.target.value})}
-                    className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📅 Fecha</label>
-                <input
-                  type="date"
-                  value={pagoData.fecha}
-                  onChange={(e) => setPagoData({...pagoData, fecha: e.target.value})}
-                  className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">💳 Método de Pago</label>
-                <select
-                  value={pagoData.metodo}
-                  onChange={(e) => setPagoData({...pagoData, metodo: e.target.value})}
-                  className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                >
-                  <option value="Transferencia">Transferencia</option>
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Tarjeta">Tarjeta</option>
-                  <option value="Cheque">Cheque</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setPagoData({...pagoData, monto: clienteSeleccionado.cuotaMensual.toString()})}
-                  className="bg-green-100 text-green-800 py-2 px-3 rounded-xl hover:bg-green-200 font-semibold text-sm"
-                >
-                  💳 Cuota Completa
-                </button>
-                <button
-                  onClick={() => setPagoData({...pagoData, monto: clienteSeleccionado.saldoPendiente.toString()})}
-                  className="bg-blue-100 text-blue-800 py-2 px-3 rounded-xl hover:bg-blue-200 font-semibold text-sm"
-                >
-                  🎯 Liquidar Todo
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={registrarPago}
-                disabled={!pagoData.monto || parseFloat(pagoData.monto) <= 0}
-                className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 font-bold disabled:opacity-50"
-              >
-                ✅ Registrar Pago
-              </button>
-              <button
-                onClick={() => setShowRegistrarPago(false)}
-                className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 font-semibold"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Editar Cliente */}
-      {showEditarCliente && clienteSeleccionado && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">✏️ Editar Cliente</h3>
-              <button onClick={() => setShowEditarCliente(false)}>
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Nombre completo"
-                value={formData.nombre || ''}
-                onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email || ''}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <input
-                type="tel"
-                placeholder="Teléfono"
-                value={formData.telefono || ''}
-                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div className="relative">
-                <span className="absolute left-3 top-3 text-gray-500">S/</span>
-                <input
-                  type="number"
-                  placeholder="Capital"
-                  value={formData.capital || ''}
-                  onChange={(e) => setFormData({...formData, capital: e.target.value})}
-                  className="w-full pl-10 p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={editarCliente}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-bold"
-              >
-                ✅ Guardar Cambios
-              </button>
-              <button
-                onClick={() => setShowEditarCliente(false)}
-                className="flex-1 bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 font-semibold"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Overlay móvil */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)}></div>
-      )}
     </div>
   );
 };
