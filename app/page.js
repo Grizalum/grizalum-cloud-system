@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save, Cloud, WifiOff } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save, Cloud, WifiOff } from 'lucide-react';
 
 const GrizalumFinancial = () => {
   const [currentView, setCurrentView] = useState('resumen');
@@ -78,6 +78,18 @@ const GrizalumFinancial = () => {
       estado: 'Activo',
       proximoPago: '2025-07-21',
       tipo: 'Préstamo Bancario'
+    },
+    {
+      id: 2,
+      acreedor: 'Proveedor Textil SAC',
+      descripcion: 'Compra de mercadería a crédito',
+      capital: 8000,
+      cuotaMensual: 800.00,
+      saldoPendiente: 6400.00,
+      tasaInteres: 0,
+      estado: 'Activo',
+      proximoPago: '2025-07-05',
+      tipo: 'Crédito Comercial'
     }
   ]);
 
@@ -93,6 +105,18 @@ const GrizalumFinancial = () => {
       estado: 'En Proceso',
       roi: 20.8,
       progreso: 65
+    },
+    {
+      id: 2,
+      nombre: 'Local Comercial Centro',
+      descripcion: 'Alquiler de local para nueva sucursal',
+      tipo: 'Inmueble',
+      inversion: 25000,
+      gananciaEsperada: 5000,
+      gananciaActual: 3750,
+      estado: 'En Proceso',
+      roi: 25.0,
+      progreso: 75
     }
   ]);
 
@@ -105,6 +129,16 @@ const GrizalumFinancial = () => {
       descripcion: 'Pago mensual de María González',
       monto: 950.00,
       cliente: 'María González',
+      metodo: 'Transferencia'
+    },
+    {
+      id: 2,
+      fecha: '2025-06-25',
+      tipo: 'Egreso',
+      categoria: 'Pago Deuda',
+      descripcion: 'Cuota mensual Banco Santander',
+      monto: 2500.00,
+      cliente: 'Banco Santander',
       metodo: 'Transferencia'
     }
   ]);
@@ -237,6 +271,34 @@ const GrizalumFinancial = () => {
     }
   };
 
+  const eliminarDeuda = (deudaId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta deuda?')) {
+      setMisDeudas(misDeudas.filter(d => d.id !== deudaId));
+      alert('✅ Deuda eliminada correctamente');
+    }
+  };
+
+  const eliminarInversion = (inversionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta inversión?')) {
+      setMisInversiones(misInversiones.filter(i => i.id !== inversionId));
+      alert('✅ Inversión eliminada correctamente');
+    }
+  };
+
+  const eliminarMovimiento = (movimientoId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar este movimiento?')) {
+      setMovimientos(movimientos.filter(m => m.id !== movimientoId));
+      alert('✅ Movimiento eliminado correctamente');
+    }
+  };
+
+  const eliminarInteraccion = (interaccionId) => {
+    if (window.confirm('⚠️ ¿Estás seguro de eliminar esta actividad?')) {
+      setInteracciones(interacciones.filter(i => i.id !== interaccionId));
+      alert('✅ Actividad eliminada correctamente');
+    }
+  };
+
   const guardarDatos = async () => {
     setSincronizando(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -278,7 +340,6 @@ const GrizalumFinancial = () => {
       />
       
       <div className="relative z-10">
-        {/* Sidebar */}
         <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static`}>
           <div className="flex items-center justify-between p-4 lg:p-6 border-b border-slate-700">
             <div className="flex items-center space-x-3">
@@ -368,9 +429,7 @@ const GrizalumFinancial = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="lg:ml-64">
-          {/* Mobile Header */}
           <div className="lg:hidden bg-white shadow-sm p-4">
             <div className="flex items-center justify-between">
               <button onClick={() => setSidebarOpen(true)} className="text-gray-600">
@@ -391,7 +450,6 @@ const GrizalumFinancial = () => {
           </div>
 
           <div className="p-4 lg:p-6">
-            {/* Top Controls */}
             <div className="mb-6 bg-white rounded-2xl shadow-xl p-3 lg:p-4">
               <div className="flex flex-wrap gap-2 lg:gap-3 justify-center lg:justify-end">
                 <div className="flex items-center bg-blue-50 px-3 py-2 rounded-lg">
@@ -436,10 +494,16 @@ const GrizalumFinancial = () => {
                     </>
                   )}
                 </button>
+                <button
+                  onClick={() => alert('📊 Función de Excel próximamente')}
+                  className="bg-green-600 text-white px-3 lg:px-4 py-2 rounded-xl hover:bg-green-700 transition-all flex items-center text-sm lg:text-base"
+                >
+                  <FileSpreadsheet className="mr-1 lg:mr-2" size={16} />
+                  Excel
+                </button>
               </div>
             </div>
 
-            {/* Security Banner */}
             <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-4">
               <div className="flex items-center space-x-3">
                 <Shield className="text-green-600" size={24} />
@@ -450,7 +514,6 @@ const GrizalumFinancial = () => {
               </div>
             </div>
 
-            {/* Content Views */}
             {currentView === 'resumen' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
@@ -625,129 +688,449 @@ const GrizalumFinancial = () => {
               </div>
             )}
 
+            {currentView === 'deudas' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">💸 Mis Deudas</h2>
+                    <button 
+                      onClick={() => alert('Nueva deuda próximamente')}
+                      className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nueva Deuda
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {misDeudas.map(deuda => (
+                      <div key={deuda.id} className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">{deuda.acreedor}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{deuda.descripcion}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Capital Original</p>
+                                <p className="font-semibold">S/{deuda.capital.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Saldo Pendiente</p>
+                                <p className="font-semibold text-red-600">S/{deuda.saldoPendiente.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Cuota Mensual</p>
+                                <p className="font-semibold text-orange-600">S/{deuda.cuotaMensual.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex items-center space-x-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                deuda.estado === 'Activo' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {deuda.estado}
+                              </span>
+                              <span className="text-sm text-gray-600">Tipo: {deuda.tipo}</span>
+                              <span className="text-sm text-gray-600">Próximo pago: {deuda.proximoPago}</span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar deuda próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarDeuda(deuda.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentView === 'inversiones' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">🏢 Mis Inversiones</h2>
+                    <button 
+                      onClick={() => alert('Nueva inversión próximamente')}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-xl hover:bg-purple-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nueva Inversión
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {misInversiones.map(inversion => (
+                      <div key={inversion.id} className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-gray-800">{inversion.nombre}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{inversion.descripcion}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Inversión</p>
+                                <p className="font-semibold">S/{inversion.inversion.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Ganancia Esperada</p>
+                                <p className="font-semibold text-green-600">S/{inversion.gananciaEsperada.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Ganancia Actual</p>
+                                <p className="font-semibold text-blue-600">S/{inversion.gananciaActual.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">ROI</p>
+                                <p className="font-semibold text-purple-600">{inversion.roi.toFixed(1)}%</p>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Progreso</span>
+                                <span>{inversion.progreso}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                                  style={{width: `${inversion.progreso}%`}}
+                                ></div>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex items-center space-x-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                inversion.estado === 'En Proceso' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                {inversion.estado}
+                              </span>
+                              <span className="text-sm text-gray-600">Tipo: {inversion.tipo}</span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar inversión próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarInversion(inversion.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentView === 'movimientos' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">📅 Movimientos</h2>
+                    <button 
+                      onClick={() => alert('Nuevo movimiento próximamente')}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all flex items-center"
+                    >
+                      <Plus className="mr-2" size={16} />
+                      Nuevo Movimiento
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {movimientos.map(movimiento => (
+                      <div key={movimiento.id} className={`border rounded-xl p-4 ${
+                        movimiento.tipo === 'Ingreso' 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+                          : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'
+                      }`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                movimiento.tipo === 'Ingreso' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {movimiento.tipo}
+                              </span>
+                              <span className="text-sm text-gray-600">{movimiento.fecha}</span>
+                              <span className="text-sm text-gray-600">{movimiento.categoria}</span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{movimiento.descripcion}</h3>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-sm text-gray-600">Monto</p>
+                                <p className={`font-bold text-lg ${
+                                  movimiento.tipo === 'Ingreso' ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {movimiento.tipo === 'Ingreso' ? '+' : '-'}S/{movimiento.monto.toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Cliente/Proveedor</p>
+                                <p className="font-semibold">{movimiento.cliente}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Método</p>
+                                <p className="font-semibold">{movimiento.metodo}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar movimiento próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarMovimiento(movimiento.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentView === 'alertas' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">🔔 Alertas</h2>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {alertas.map(alerta => (
+                      <div key={alerta.id} className={`border rounded-xl p-4 ${
+                        alerta.urgencia === 'alta' 
+                          ? 'bg-red-50 border-red-200' 
+                          : alerta.urgencia === 'media'
+                          ? 'bg-yellow-50 border-yellow-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                alerta.urgencia === 'alta' 
+                                  ? 'bg-red-100 text-red-800' 
+                                  : alerta.urgencia === 'media'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {alerta.urgencia.toUpperCase()}
+                              </span>
+                              <span className="text-sm text-gray-600">{alerta.tipo}</span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{alerta.mensaje}</h3>
+                            <div className="mt-2 text-sm text-gray-600">
+                              <p>Fecha vencimiento: {alerta.fechaVencimiento}</p>
+                              <p>Creada: {alerta.fechaCreacion}</p>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => alert('Editar alerta próximamente')}
+                              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => eliminarAlerta(alerta.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentView === 'interacciones' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">📋 Actividad Reciente</h2>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {interacciones.map(interaccion => (
+                      <div key={interaccion.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                {interaccion.tipo}
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                {new Date(interaccion.fecha).toLocaleString()}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-gray-800">{interaccion.descripcion}</h3>
+                            <p className="text-sm text-gray-600 mt-1">Usuario: {interaccion.usuario}</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => eliminarInteraccion(interaccion.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showModalCliente && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold text-gray-800">💰 Nuevo Cliente</h3>
+                    <button onClick={() => setShowModalCliente(false)} className="text-gray-500 hover:text-gray-700">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                      <input
+                        type="text"
+                        value={formCliente.nombre}
+                        onChange={(e) => setFormCliente({...formCliente, nombre: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Ej: Juan Pérez"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={formCliente.email}
+                        onChange={(e) => setFormCliente({...formCliente, email: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="juan@example.com"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                      <input
+                        type="tel"
+                        value={formCliente.telefono}
+                        onChange={(e) => setFormCliente({...formCliente, telefono: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="+51 999 123 456"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Capital (S/) *</label>
+                        <input
+                          type="number"
+                          value={formCliente.capital}
+                          onChange={(e) => setFormCliente({...formCliente, capital: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="10000"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tasa (%) *</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={formCliente.tasaInteres}
+                          onChange={(e) => setFormCliente({...formCliente, tasaInteres: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="14"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Plazo (meses) *</label>
+                        <input
+                          type="number"
+                          value={formCliente.plazoMeses}
+                          onChange={(e) => setFormCliente({...formCliente, plazoMeses: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="18"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio *</label>
+                        <input
+                          type="date"
+                          value={formCliente.fechaInicio}
+                          onChange={(e) => setFormCliente({...formCliente, fechaInicio: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3 mt-6">
+                    <button
+                      onClick={() => setShowModalCliente(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={agregarCliente}
+                      disabled={sincronizando}
+                      className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 flex items-center justify-center"
+                    >
+                      {sincronizando ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Guardando...
+                        </>
+                      ) : (
+                        '💾 Guardar Cliente'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Modal Nuevo Cliente */}
-      {showModalCliente && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800">💰 Nuevo Cliente</h3>
-              <button onClick={() => setShowModalCliente(false)} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
-                <input
-                  type="text"
-                  value={formCliente.nombre}
-                  onChange={(e) => setFormCliente({...formCliente, nombre: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Ej: Juan Pérez"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formCliente.email}
-                  onChange={(e) => setFormCliente({...formCliente, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="juan@example.com"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                <input
-                  type="tel"
-                  value={formCliente.telefono}
-                  onChange={(e) => setFormCliente({...formCliente, telefono: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="+51 999 123 456"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Capital (S/) *</label>
-                  <input
-                    type="number"
-                    value={formCliente.capital}
-                    onChange={(e) => setFormCliente({...formCliente, capital: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="10000"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tasa (%) *</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formCliente.tasaInteres}
-                    onChange={(e) => setFormCliente({...formCliente, tasaInteres: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="14"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Plazo (meses) *</label>
-                  <input
-                    type="number"
-                    value={formCliente.plazoMeses}
-                    onChange={(e) => setFormCliente({...formCliente, plazoMeses: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="18"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio *</label>
-                  <input
-                    type="date"
-                    value={formCliente.fechaInicio}
-                    onChange={(e) => setFormCliente({...formCliente, fechaInicio: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={() => setShowModalCliente(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={agregarCliente}
-                disabled={sincronizando}
-                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 flex items-center justify-center"
-              >
-                {sincronizando ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Guardando...
-                  </>
-                ) : (
-                  '💾 Guardar Cliente'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
