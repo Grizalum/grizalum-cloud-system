@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, Calendar, Calculator, History, Share2, FileSpreadsheet, Edit, Bell, MessageSquare, Shield, Trash2, CheckCircle, Save, Cloud, WifiOff } from 'lucide-react';
+import { 
+  Home, 
+  TrendingUp, 
+  TrendingDown, 
+  Building, 
+  Plus, 
+  Menu, 
+  X, 
+  DollarSign, 
+  Calendar, 
+  Calculator, 
+  History, 
+  Share2, 
+  FileSpreadsheet, 
+  Edit, 
+  Bell, 
+  MessageSquare, 
+  Shield, 
+  Trash2, 
+  CheckCircle, 
+  Save, 
+  Cloud, 
+  WifiOff 
+} from 'lucide-react';
 
 const GrizalumFinancial = () => {
   const [currentView, setCurrentView] = useState('resumen');
