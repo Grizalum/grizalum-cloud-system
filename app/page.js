@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { 
   Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, 
@@ -8,14 +6,20 @@ import {
   AlertTriangle, Search
 } from 'lucide-react';
 
-export default function Page() {
+export default function GrizalumFinancial() {
   const [currentView, setCurrentView] = useState('resumen');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [datosGuardados, setDatosGuardados] = useState(false);
   const [firebaseConectado, setFirebaseConectado] = useState(true);
   const [sincronizando, setSincronizando] = useState(false);
   const [showModalCliente, setShowModalCliente] = useState(false);
+  const [showModalPago, setShowModalPago] = useState(false);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  
+  const [formPago, setFormPago] = useState({
+    monto: '', metodo: 'Transferencia', fecha: ''
+  });
   
   const [formCliente, setFormCliente] = useState({
     nombre: '', email: '', telefono: '', capital: '', tasaInteres: '14', plazoMeses: '12', fechaInicio: ''
@@ -85,15 +89,70 @@ export default function Page() {
       ...prev,
       fechaInicio: new Date().toISOString().split('T')[0]
     }));
+    setFormPago(prev => ({
+      ...prev,
+      fecha: new Date().toISOString().split('T')[0]
+    }));
     const interval = setInterval(() => setFirebaseConectado(Math.random() > 0.1), 8000);
     return () => clearInterval(interval);
   }, []);
 
   const calcularCuotaMensual = (capital, tasa, meses) => {
+    if (tasa === 0) {
+      return capital / meses;
+    }
     const tasaMensual = tasa / 100 / 12;
     return (capital * tasaMensual * Math.pow(1 + tasaMensual, meses)) / (Math.pow(1 + tasaMensual, meses) - 1);
   };
+
+  const totalPorCobrar = misClientes.reduce((acc, c) => acc + c.saldoPendiente, 0);
+  const totalPorPagar = misDeudas.reduce((acc, d) => acc + d.saldoPendiente, 0);
+  const balanceNeto = totalPorCobrar - totalPorPagar;
+  const recursosDisponibles = totalPorCobrar + misInversiones.reduce((acc, i) => acc + i.gananciaActual, 0);
+  const cobertura = totalPorPagar > 0 ? (recursosDisponibles / totalPorPagar) * 100 : 100;
   
+  const registrarPago = async () => {
+    if (!formPago.monto || !formPago.fecha) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+    
+    const monto = parseFloat(formPago.monto);
+    if (monto <= 0 || monto > clienteSeleccionado.saldoPendiente) {
+      alert('El monto debe ser mayor a 0 y no exceder el saldo pendiente');
+      return;
+    }
+    
+    setSincronizando(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const nuevoPago = {
+      id: Date.now(),
+      fecha: formPago.fecha,
+      monto: monto,
+      metodo: formPago.metodo
+    };
+    
+    const clientesActualizados = misClientes.map(cliente => {
+      if (cliente.id === clienteSeleccionado.id) {
+        return {
+          ...cliente,
+          historialPagos: [...cliente.historialPagos, nuevoPago],
+          pagosRecibidos: cliente.pagosRecibidos + monto,
+          saldoPendiente: cliente.saldoPendiente - monto,
+          estado: (cliente.saldoPendiente - monto) <= 0 ? 'Completado' : 'En Proceso'
+        };
+      }
+      return cliente;
+    });
+    
+    setMisClientes(clientesActualizados);
+    setFormPago({ monto: '', metodo: 'Transferencia', fecha: new Date().toISOString().split('T')[0] });
+    setShowModalPago(false);
+    setSincronizando(false);
+    alert('Pago registrado exitosamente');
+  };
+
   const agregarCliente = async () => {
     if (!formCliente.nombre || !formCliente.capital || !formCliente.tasaInteres || !formCliente.plazoMeses) {
       alert('Por favor completa todos los campos obligatorios');
@@ -112,19 +171,51 @@ export default function Page() {
     fechaVencimiento.setMonth(fechaVencimiento.getMonth() + meses);
     
     const nuevoCliente = {
-      id: Date.now(), nombre: formCliente.nombre, email: formCliente.email, telefono: formCliente.telefono,
-      capital: capital, cuotaMensual: Math.round(cuotaMensual * 100) / 100, 
-      totalCobrar: Math.round(totalCobrar * 100) / 100, saldoPendiente: Math.round(totalCobrar * 100) / 100,
-      pagosRecibidos: 0, estado: 'En Proceso', fechaInicio: formCliente.fechaInicio, tasaInteres: tasa,
-      plazoMeses: meses, fechaVencimiento: fechaVencimiento.toISOString().split('T')[0], historialPagos: []
+      id: Date.now(),
+      nombre: formCliente.nombre,
+      email: formCliente.email,
+      telefono: formCliente.telefono,
+      capital: capital,
+      cuotaMensual: Math.round(cuotaMensual * 100) / 100,
+      totalCobrar: Math.round(totalCobrar * 100) / 100,
+      saldoPendiente: Math.round(totalCobrar * 100) / 100,
+      pagosRecibidos: 0,
+      estado: 'En Proceso',
+      fechaInicio: formCliente.fechaInicio,
+      tasaInteres: tasa,
+      plazoMeses: meses,
+      fechaVencimiento: fechaVencimiento.toISOString().split('T')[0],
+      historialPagos: []
     };
     
     await new Promise(resolve => setTimeout(resolve, 1500));
     setMisClientes([...misClientes, nuevoCliente]);
-    setFormCliente({ nombre: '', email: '', telefono: '', capital: '', tasaInteres: '14', plazoMeses: '12', fechaInicio: new Date().toISOString().split('T')[0] });
+    setFormCliente({
+      nombre: '',
+      email: '',
+      telefono: '',
+      capital: '',
+      tasaInteres: '14',
+      plazoMeses: '12',
+      fechaInicio: new Date().toISOString().split('T')[0]
+    });
     setShowModalCliente(false);
     setSincronizando(false);
     alert('Cliente agregado exitosamente');
+  };
+
+  const eliminarCliente = async (clienteId) => {
+    if (window.confirm('Confirmas eliminar este cliente?')) {
+      setSincronizando(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setMisClientes(misClientes.filter(c => c.id !== clienteId));
+      setSincronizando(false);
+      alert('Cliente eliminado exitosamente');
+    }
+  };
+
+  const eliminarAlerta = (alertaId) => {
+    setAlertas(alertas.filter(a => a.id !== alertaId));
   };
 
   const filtrarPorBusqueda = (items, campos) => {
@@ -136,14 +227,6 @@ export default function Page() {
       })
     );
   };
-
-  const totalPorCobrar = misClientes.reduce((acc, c) => acc + c.saldoPendiente, 0);
-  const totalPorPagar = misDeudas.reduce((acc, d) => acc + d.saldoPendiente, 0);
-  const totalInversiones = misInversiones.reduce((acc, i) => acc + i.inversion, 0);
-  const totalGananciasInversiones = misInversiones.reduce((acc, i) => acc + i.gananciaActual, 0);
-  const balanceNeto = totalPorCobrar - totalPorPagar;
-  const recursosDisponibles = totalPorCobrar + totalGananciasInversiones;
-  const cobertura = totalPorPagar > 0 ? (recursosDisponibles / totalPorPagar) * 100 : 100;
 
   const guardarDatos = async () => {
     setSincronizando(true);
@@ -179,27 +262,8 @@ Control Financiero Empresarial`;
     });
   };
 
-  const eliminarCliente = async (clienteId) => {
-    if (window.confirm('Confirmas eliminar este cliente?')) {
-      setSincronizando(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setMisClientes(misClientes.filter(c => c.id !== clienteId));
-      setSincronizando(false);
-      alert('Cliente eliminado exitosamente');
-    }
-  };
-
-  const eliminarAlerta = (alertaId) => {
-    setAlertas(alertas.filter(a => a.id !== alertaId));
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 relative">
-      <div className="fixed inset-0 z-0 opacity-5 pointer-events-none" style={{
-        backgroundImage: 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 400 400\'%3E%3Ctext x=\'200\' y=\'200\' text-anchor=\'middle\' font-size=\'60\' fill=\'%23000\'%3EGRIZALUM%3C/text%3E%3C/svg%3E")',
-        backgroundRepeat: 'repeat', backgroundSize: '350px 350px'
-      }} />
-      
       <div className="relative z-10">
         {sidebarOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -342,6 +406,10 @@ Control Financiero Empresarial`;
 
             <div className="mb-6 bg-white rounded-2xl shadow-xl p-4">
               <div className="flex flex-wrap gap-3 justify-center lg:justify-end">
+                <button onClick={() => alert('Descarga próximamente')} className="bg-emerald-500 text-white px-4 py-2 rounded-xl hover:bg-emerald-600 transition-all flex items-center text-sm font-semibold">
+                  <FileSpreadsheet className="mr-2" size={16} />
+                  Descargar Excel
+                </button>
                 <button onClick={copiarReporte} className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-all flex items-center text-sm font-semibold">
                   <Share2 className="mr-2" size={16} />
                   Copiar Reporte
@@ -556,12 +624,21 @@ Control Financiero Empresarial`;
                           </div>
                           
                           <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
-                            <button onClick={() => alert('Registrar pago proximamente')}
+                            <button onClick={() => {
+                              setClienteSeleccionado(cliente);
+                              setFormPago({ monto: cliente.cuotaMensual.toString(), metodo: 'Transferencia', fecha: new Date().toISOString().split('T')[0] });
+                              setShowModalPago(true);
+                            }}
                               className="bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all shadow-lg flex-1 lg:flex-none"
                               title="Registrar Pago">
                               <DollarSign size={18} />
                             </button>
-                            <button onClick={() => alert('Editar cliente proximamente')}
+                            <button onClick={() => alert('Historial proximamente')}
+                              className="bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all shadow-lg flex-1 lg:flex-none"
+                              title="Ver Historial">
+                              <FileSpreadsheet size={18} />
+                            </button>
+                            <button onClick={() => alert('Editar proximamente')}
                               className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all shadow-lg flex-1 lg:flex-none"
                               title="Editar Cliente">
                               <Edit size={18} />
@@ -846,6 +923,7 @@ Control Financiero Empresarial`;
               </div>
             )}
 
+            {/* MODALES */}
             {showModalCliente && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -908,6 +986,17 @@ Control Financiero Empresarial`;
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
                     </div>
+                    
+                    {formCliente.capital && formCliente.tasaInteres && formCliente.plazoMeses && (
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h4 className="font-semibold text-blue-800 mb-2">Vista Previa del Préstamo</h4>
+                        <div className="text-sm space-y-1">
+                          <p>Cuota mensual: <span className="font-bold">S/ {calcularCuotaMensual(parseFloat(formCliente.capital), parseFloat(formCliente.tasaInteres), parseInt(formCliente.plazoMeses)).toFixed(2)}</span></p>
+                          <p>Total a cobrar: <span className="font-bold">S/ {(calcularCuotaMensual(parseFloat(formCliente.capital), parseFloat(formCliente.tasaInteres), parseInt(formCliente.plazoMeses)) * parseInt(formCliente.plazoMeses)).toFixed(2)}</span></p>
+                          <p>Ganancia total: <span className="font-bold text-green-600">S/ {((calcularCuotaMensual(parseFloat(formCliente.capital), parseFloat(formCliente.tasaInteres), parseInt(formCliente.plazoMeses)) * parseInt(formCliente.plazoMeses)) - parseFloat(formCliente.capital)).toFixed(2)}</span></p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
@@ -924,6 +1013,74 @@ Control Financiero Empresarial`;
                         </>
                       ) : (
                         'Guardar Cliente'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showModalPago && clienteSeleccionado && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold text-gray-800">Registrar Pago</h3>
+                    <button onClick={() => setShowModalPago(false)} className="text-gray-500 hover:text-gray-700">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  
+                  <div className="mb-4 bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-700 mb-2">Cliente: {clienteSeleccionado.nombre}</h4>
+                    <div className="text-sm space-y-1">
+                      <p>Saldo pendiente: <span className="font-bold text-red-600">S/ {clienteSeleccionado.saldoPendiente.toLocaleString()}</span></p>
+                      <p>Cuota sugerida: <span className="font-bold text-green-600">S/ {clienteSeleccionado.cuotaMensual.toLocaleString()}</span></p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Monto a pagar (S/) *</label>
+                      <input type="number" step="0.01" value={formPago.monto} 
+                        onChange={(e) => setFormPago({...formPago, monto: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="0.00" />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Método de pago *</label>
+                      <select value={formPago.metodo} onChange={(e) => setFormPago({...formPago, metodo: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Deposito">Depósito</option>
+                        <option value="Yape">Yape</option>
+                        <option value="Plin">Plin</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de pago *</label>
+                      <input type="date" value={formPago.fecha} 
+                        onChange={(e) => setFormPago({...formPago, fecha: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-6">
+                    <button onClick={() => setShowModalPago(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                      Cancelar
+                    </button>
+                    <button onClick={registrarPago} disabled={sincronizando}
+                      className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 flex items-center justify-center font-semibold">
+                      {sincronizando ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Registrando...
+                        </>
+                      ) : (
+                        'Registrar Pago'
                       )}
                     </button>
                   </div>
