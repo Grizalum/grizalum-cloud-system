@@ -401,13 +401,23 @@ export default function GrizalumFinancial() {
       alert('Deuda eliminada exitosamente');
     }
   };
+  
+const eliminarInversion = (inversionId) => {
+  if (window.confirm('¿Confirmas eliminar esta inversión?')) {
+    setMisInversiones(prev => prev.filter(i => i.id !== inversionId));
+    alert('Inversión eliminada exitosamente');
+  }
+};
 
-  const eliminarInversion = (inversionId) => {
-    if (window.confirm('¿Confirmas eliminar esta inversión?')) {
-      setMisInversiones(prev => prev.filter(i => i.id !== inversionId));
-      alert('Inversión eliminada exitosamente');
-    }
-  };
+const editarInversion = (inversion) => {
+  alert('Editar inversión próximamente');
+  // Aquí puedes agregar la lógica para editar
+};
+
+const actualizarROI = (inversion) => {
+  alert('Actualizar ROI próximamente');
+  // Aquí puedes agregar la lógica para actualizar ROI
+};
 
   const filtrarPorBusqueda = (items, campos) => {
     if (!busqueda) return items;
@@ -849,28 +859,32 @@ Control Financiero Empresarial`;
                           </div>
                           
                           <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
-                            <button onClick={() => abrirModalPago(cliente)}
+                            <button
+                               onClick={() => actualizarROI(inversion)}
                               className="bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all shadow-lg flex-1 lg:flex-none"
-                              title="Registrar Pago">
-                              <DollarSign size={18} />
+                              title="Actualizar Ganancias">
+                              <TrendingUp size={18} />
                             </button>
-                            <button onClick={() => abrirHistorialPagos(cliente)}
+                            onClick={() => editarInversion(inversion)}
                               className="bg-indigo-500 text-white p-3 rounded-lg hover:bg-indigo-600 transition-all shadow-lg flex-1 lg:flex-none"
-                              title="Ver Historial">
-                              <Eye size={18} />
+                              title="Editar Inversión">
+                              <Edit size={18} />
                             </button>
                             <button onClick={() => abrirModalEditarCliente(cliente)}
                               className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all shadow-lg flex-1 lg:flex-none"
                               title="Editar Cliente">
                               <Edit size={18} />
                             </button>
-                            <button onClick={() => eliminarCliente(cliente.id)} disabled={sincronizando}
-                              className="bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all shadow-lg flex-1 lg:flex-none disabled:opacity-50"
-                              title="Eliminar Cliente">
-                              {sincronizando ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              ) : (
-                                <Trash2 size={18} />
+                            <button
+                              onClick={() => eliminarInversion(inversion.id)}
+                               className="bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all shadow-lg flex-1 lg:flex-none"
+                              title="Eliminar Inversión">
+                              <Trash2 size={18} />
+                            </button>
+                              <button
+                                onClick={() => setShowModalNuevaInversion(true)}
+                                className="bg-purple-500 text-white px-6 py-3 rounded-xl hover:bg-purple-600 transition-all flex items-center font-semibold shadow-lg w-full lg:w-auto justify-center">
+                                <Plus className="mr-2" size={18} />
                               )}
                             </button>
                           </div>
