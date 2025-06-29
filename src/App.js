@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, 
+  Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign,  
   Calculator, Share2, FileSpreadsheet, Edit, Bell, Shield, Trash2, 
   CheckCircle, Cloud, WifiOff, User, Phone, Mail, CreditCard, 
   AlertTriangle, Search, Eye
@@ -681,58 +681,216 @@ Control Financiero Empresarial`;
               </div>
             </div>
 
-            {currentView === 'resumen' && (
-              <div className="space-y-6">
-                <div className="bg-white rounded-2xl shadow-xl p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Dashboard Financiero</h2>
-                  <p className="text-gray-600 mb-4">Análisis completo en tiempo real</p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-green-100 text-sm font-medium">Por Cobrar</p>
-                          <p className="text-2xl font-bold">S/{totalPorCobrar.toLocaleString()}</p>
-                          <p className="text-green-200 text-xs mt-1">{misClientes.filter(c => c.estado === 'En Proceso').length} clientes</p>
-                        </div>
-                        <TrendingUp size={32} className="text-green-200" />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-red-100 text-sm font-medium">Deudas</p>
-                          <p className="text-2xl font-bold">S/{totalPorPagar.toLocaleString()}</p>
-                          <p className="text-red-200 text-xs mt-1">{misDeudas.filter(d => d.estado === 'Activo').length} activas</p>
-                        </div>
-                        <TrendingDown size={32} className="text-red-200" />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-blue-100 text-sm font-medium">Balance</p>
-                          <p className="text-2xl font-bold">S/{balanceNeto.toLocaleString()}</p>
-                          <p className="text-blue-200 text-xs mt-1">{balanceNeto >= 0 ? 'Favorable' : 'Atención'}</p>
-                        </div>
-                        <DollarSign size={32} className="text-blue-200" />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-purple-100 text-sm font-medium">Cobertura</p>
-                          <p className="text-2xl font-bold">{Math.round(cobertura)}%</p>
-                          <p className="text-purple-200 text-xs mt-1">{cobertura >= 100 ? 'Excelente' : 'Mejorar'}</p>
-                        </div>
-                        <Calculator size={32} className="text-purple-200" />
-                      </div>
-                    </div>
+            # 🔧 Solución - Botones que no Responden
+
+## ⚡ **PROBLEMA IDENTIFICADO:**
+Los botones no responden porque faltan las funciones o están mal conectadas.
+
+---
+
+## 🛠️ **SOLUCIÓN RÁPIDA:**
+
+### **1. Verificar que tienes TODAS las funciones en src/App.js:**
+
+```jsx
+// AGREGAR ESTAS FUNCIONES SI FALTAN:
+
+const eliminarInversion = (inversionId) => {
+  if (window.confirm('¿Confirmas eliminar esta inversión?')) {
+    setMisInversiones(prev => prev.filter(i => i.id !== inversionId));
+    alert('Inversión eliminada exitosamente');
+  }
+};
+
+const editarInversion = (inversion) => {
+  alert('Editar inversión próximamente');
+  // Aquí puedes agregar la lógica para editar
+};
+
+const actualizarROI = (inversion) => {
+  alert('Actualizar ROI próximamente');
+  // Aquí puedes agregar la lógica para actualizar ROI
+};
+```
+
+---
+
+### **2. En la sección de INVERSIONES, asegurate que los botones estén así:**
+
+```jsx
+<div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
+  <button 
+    onClick={() => actualizarROI(inversion)}
+    className="bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all shadow-lg flex-1 lg:flex-none"
+    title="Actualizar Ganancias">
+    <TrendingUp size={18} />
+  </button>
+  
+  <button 
+    onClick={() => editarInversion(inversion)}
+    className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all shadow-lg flex-1 lg:flex-none"
+    title="Editar Inversión">
+    <Edit size={18} />
+  </button>
+  
+  <button 
+    onClick={() => eliminarInversion(inversion.id)}
+    className="bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all shadow-lg flex-1 lg:flex-none"
+    title="Eliminar Inversión">
+    <Trash2 size={18} />
+  </button>
+</div>
+```
+
+---
+
+### **3. Para el botón "Nueva Inversión":**
+
+```jsx
+<button 
+  onClick={() => setShowModalNuevaInversion(true)}
+  className="bg-purple-500 text-white px-6 py-3 rounded-xl hover:bg-purple-600 transition-all flex items-center font-semibold shadow-lg w-full lg:w-auto justify-center">
+  <Plus className="mr-2" size={18} />
+  Nueva Inversión
+</button>
+```
+
+---
+
+## 🔍 **VERIFICACIONES RÁPIDAS:**
+
+### **1. Revisa en la consola del navegador (F12):**
+- Presiona F12
+- Ve a la pestaña "Console"
+- Haz clic en los botones
+- ¿Aparecen errores?
+
+### **2. Verifica que los imports estén completos:**
+```jsx
+import { 
+  Home, TrendingUp, TrendingDown, Building, Plus, Menu, X, DollarSign, 
+  Calculator, Share2, FileSpreadsheet, Edit, Bell, Shield, Trash2, 
+  CheckCircle, Cloud, WifiOff, User, Phone, Mail, CreditCard, 
+  AlertTriangle, Search, Eye
+} from 'lucide-react';
+```
+
+---
+
+## ⚡ **SOLUCIÓN INMEDIATA - REEMPLAZA LA SECCIÓN DE INVERSIONES:**
+
+```jsx
+{currentView === 'inversiones' && (
+  <div className="space-y-6">
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Portfolio de Inversiones</h2>
+          <p className="text-gray-600">Gestión de activos y ROI</p>
+        </div>
+        <button 
+          onClick={() => alert('Nueva inversión próximamente')}
+          className="bg-purple-500 text-white px-6 py-3 rounded-xl hover:bg-purple-600 transition-all flex items-center font-semibold shadow-lg w-full lg:w-auto justify-center">
+          <Plus className="mr-2" size={18} />
+          Nueva Inversión
+        </button>
+      </div>
+      
+      <div className="grid gap-6">
+        {misInversiones.map(inversion => (
+          <div key={inversion.id} className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 hover:shadow-lg transition-all">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <Building className="text-white" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-800">{inversion.nombre}</h3>
+                    <p className="text-sm text-gray-600">{inversion.descripcion}</p>
                   </div>
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600 mb-1">Inversión</p>
+                    <p className="font-bold text-lg text-blue-600">S/{inversion.inversion.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">Tipo: {inversion.tipo}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600 mb-1">Esperada</p>
+                    <p className="font-bold text-lg text-green-600">S/{inversion.gananciaEsperada.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600 mb-1">Actual</p>
+                    <p className="font-bold text-lg text-emerald-600">S/{inversion.gananciaActual.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600 mb-1">ROI</p>
+                    <p className="font-bold text-lg text-purple-600">{inversion.roi.toFixed(1)}%</p>
+                    <p className="text-xs text-gray-500">Progreso: {inversion.progreso}%</p>
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">Progreso de Inversión</span>
+                    <span className="font-semibold text-purple-600">{inversion.progreso}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+                      style={{width: `${inversion.progreso}%`}}></div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                    inversion.estado === 'En Proceso' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {inversion.estado}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2">
+                <button 
+                  onClick={() => {
+                    console.log('Actualizando ROI para:', inversion.nombre);
+                    alert('ROI actualizado próximamente');
+                  }}
+                  className="bg-green-500 text-white p-3 rounded-lg hover:bg-green-600 transition-all shadow-lg flex-1 lg:flex-none hover:scale-105"
+                  title="Actualizar Ganancias">
+                  <TrendingUp size={18} />
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    console.log('Editando inversión:', inversion.nombre);
+                    alert('Editar inversión próximamente');
+                  }}
+                  className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all shadow-lg flex-1 lg:flex-none hover:scale-105"
+                  title="Editar Inversión">
+                  <Edit size={18} />
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    console.log('Eliminando inversión:', inversion.nombre);
+                    eliminarInversion(inversion.id);
+                  }}
+                  className="bg-red-500 text-white p-3 rounded-lg hover:bg-red-600 transition-all shadow-lg flex-1 lg:flex-none hover:scale-105"
+                  title="Eliminar Inversión">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
 
                 {alertas.filter(a => a.activa).length > 0 && (
                   <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-r-2xl p-6">
