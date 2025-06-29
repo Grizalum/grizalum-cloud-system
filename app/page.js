@@ -610,7 +610,7 @@ Control Financiero Empresarial`;
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold">GRIZALUM</h1>
                     <p className="text-slate-300 text-lg">COMPAÑÍA METÁLURGICA</p>
-                    <p className="text-slate-400 text-sm">Control Financiero Profesional + Firebase</p>
+                    <p className="text-slate-400 text-sm">Control Financiero Profesional</p>
                   </div>
                 </div>
                 <div className="text-left lg:text-right">
@@ -618,7 +618,7 @@ Control Financiero Empresarial`;
                     {firebaseConectado ? (
                       <>
                         <Cloud className="text-green-400" size={20} />
-                        <span className="text-green-400 font-semibold">Sistema Conectado</span>
+                        <span className="text-green-400 font-semibold">Sistema Online</span>
                       </>
                     ) : (
                       <>
@@ -670,8 +670,8 @@ Control Financiero Empresarial`;
               <div className="flex items-center space-x-3">
                 <Shield className="text-green-600" size={24} />
                 <div>
-                  <h4 className="font-semibold text-green-800">Datos Seguros con Firebase</h4>
-                  <p className="text-sm text-green-700">Información protegida en la nube de Google.</p>
+                  <h4 className="font-semibold text-green-800">Sistema Seguro</h4>
+                  <p className="text-sm text-green-700">Información protegida con encriptación avanzada.</p>
                 </div>
               </div>
             </div>
