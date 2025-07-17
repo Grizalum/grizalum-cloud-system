@@ -1,32 +1,82 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
+# ============================================================================
+# GRIZALUM - .gitignore
+# Sistema Financiero Empresarial Premium
+# ============================================================================
 
-# Testing
-/coverage
-
-# Production
-/build
-
-# Misc
+# ===== ARCHIVOS DEL SISTEMA OPERATIVO =====
+# macOS
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
 
-# IDE
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===== EDITORES E IDEs =====
+# Visual Studio Code
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs
 .idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# Vim
 *.swp
 *.swo
 *~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===== NODE.JS =====
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Runtime data
 pids
@@ -34,15 +84,298 @@ pids
 *.seed
 *.pid.lock
 
-# Cache
-.npm
-.eslintcache
+# Coverage directory usado por herramientas como istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
 
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
 # dotenv environment variables file
 .env
+.env.test
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# ===== LOGS =====
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ===== BASE DE DATOS =====
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# PostgreSQL
+*.pgsql
+
+# MySQL
+*.sql
+
+# ===== ARCHIVOS DE CONFIGURACIÓN SENSIBLES =====
+# Configuración local
+config/local.js
+config/local.json
+config/secrets.js
+config/database.local.js
+
+# Archivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Claves API
+api-keys.json
+secrets.json
+credentials.json
+
+# Certificados SSL
+*.pem
+*.key
+*.cert
+*.crt
+
+# ===== ARCHIVOS TEMPORALES =====
+# Archivos temporales
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# ===== ARCHIVOS DE BUILD Y DIST =====
+# Build outputs
+build/
+dist/
+out/
+
+# Generated files
+generated/
+*.generated.*
+
+# Minified files
+*.min.js
+*.min.css
+
+# Source maps
+*.map
+
+# ===== TESTING =====
+# Test coverage
+coverage/
+*.lcov
+
+# Jest
+.jest/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# ===== DOCUMENTACIÓN GENERADA =====
+# JSDoc
+docs/generated/
+docs/api/
+
+# ===== ARCHIVOS ESPECÍFICOS DEL PROYECTO =====
+# Datos de prueba sensibles
+data/test/
+data/sample/
+data/backup/
+
+# Configuración de usuario específica
+user-config.json
+personal-settings.json
+
+# Archivos de desarrollo local
+dev-notes.md
+todo.md
+scratch.js
+
+# Reportes generados
+reports/*.pdf
+reports/*.xlsx
+reports/*.csv
+
+# Uploads de usuario
+uploads/
+user-uploads/
+
+# ===== HERRAMIENTAS DE DESARROLLO =====
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Stylelint
+.stylelintcache
+
+# Webpack
+webpack-stats.json
+
+# Rollup
+rollup-stats.json
+
+# ===== DEPLOYMENT =====
+# Netlify
+.netlify/
 
 # Vercel
-.vercel
+.vercel/
+
+# AWS
+.aws/
+
+# Docker
+Dockerfile.local
+docker-compose.override.yml
+
+# ===== ARCHIVOS DE SISTEMA =====
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# ===== ARCHIVOS MULTIMEDIA TEMPORALES =====
+# Images (solo temporales)
+*.tmp.jpg
+*.tmp.png
+*.tmp.gif
+*.tmp.svg
+
+# ===== MONITOREO Y ANALYTICS =====
+# Google Analytics
+ga-credentials.json
+
+# Sentry
+.sentryclirc
+
+# ===== ARCHIVOS DE TRABAJO =====
+# Notas personales
+NOTES.md
+TODO.md
+SCRATCH.md
+
+# Archivos de prueba
+test-data.json
+sample-data.json
+
+# ===== CARPETAS ESPECÍFICAS DEL PROYECTO =====
+# Carpeta de desarrollo local
+dev/
+development/
+
+# Carpeta de experimentos
+experiments/
+playground/
+
+# Archivos de configuración local
+local/
+
+# ===== EXCEPCIONES (NO IGNORAR) =====
+# Archivos importantes que NO deben ser ignorados
+!assets/images/logo.png
+!assets/images/favicon.ico
+!docs/screenshots/.gitkeep
+!config/default.js
+!scripts/deploy.sh
+
+# Mantener estructura de carpetas vacías
+!**/.gitkeep
+
+# ===== COMENTARIOS ADICIONALES =====
+# Este .gitignore está optimizado para:
+# - Desarrollo web frontend (HTML, CSS, JS)
+# - Node.js y npm
+# - Herramientas de desarrollo modernas
+# - Seguridad (excluye archivos sensibles)
+# - Rendimiento (excluye archivos grandes innecesarios)
+
+# Para agregar archivos específicos, usar:
+# git add -f archivo-especifico.ext
+
+# Para ver archivos ignorados:
+# git status --ignored
