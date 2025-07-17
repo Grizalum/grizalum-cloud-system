@@ -1,38 +1,80 @@
 {
-  "name": "grizalum-cloud-system",
+  "name": "grizalum-sistema-financiero",
   "version": "1.0.0",
-  "description": "Sistema de Gestión de Préstamos GRIZALUM Cloud",
-  "private": true,
-  "homepage": ".",
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "lucide-react": "^0.263.1",
-    "web-vitals": "^2.1.4"
+  "description": "Sistema financiero empresarial premium con IA integrada para empresas peruanas",
+  "main": "src/index.html",
+  "homepage": "https://tu-usuario.github.io/grizalum-sistema-financiero",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/grizalum-sistema-financiero.git"
+  },
+  "keywords": [
+    "sistema-financiero",
+    "contabilidad",
+    "peru",
+    "dashboard",
+    "flujo-de-caja",
+    "inteligencia-artificial",
+    "responsive",
+    "charts",
+    "enterprise",
+    "soles-peruanos"
+  ],
+  "author": {
+    "name": "GRIZALUM Team",
+    "email": "grizalum@empresa.com",
+    "url": "https://github.com/tu-usuario"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tu-usuario/grizalum-sistema-financiero/issues"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "npx serve . -p 8000",
+    "dev": "npx serve . -p 3000 --live",
+    "build": "echo 'Building for production...' && npm run minify",
+    "minify": "echo 'Minification would happen here in a real build process'",
+    "test": "echo 'Tests would run here'",
+    "lint": "echo 'ESLint would run here'",
+    "deploy": "gh-pages -d .",
+    "preview": "npx serve . -p 8080",
+    "docs": "echo 'Documentation generation would happen here'"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "devDependencies": {
+    "gh-pages": "^6.1.1",
+    "serve": "^14.2.1"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "config": {
+    "port": 8000,
+    "host": "localhost"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/tu-usuario"
+  },
+  "contributors": [
+    {
+      "name": "Tu Nombre",
+      "email": "tu-email@ejemplo.com",
+      "url": "https://github.com/tu-usuario"
+    }
+  ],
+  "files": [
+    "src/",
+    "assets/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ]
 }
