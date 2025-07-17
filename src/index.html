@@ -1,1 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRIZALUM - Sistema Financiero Empresarial Premium</title>
+    
+    <!-- Meta Tags SEO -->
+    <meta name="description" content="Sistema financiero empresarial premium con IA integrada para empresas peruanas. Dashboard ejecutivo, flujo de caja, análisis predictivo.">
+    <meta name="keywords" content="sistema financiero, empresas peru, contabilidad, flujo de caja, dashboard, IA">
+    <meta name="author" content="GRIZALUM">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="GRIZALUM - Sistema Financiero Premium">
+    <meta property="og:description" content="Sistema financiero empresarial con IA para empresas peruanas">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tu-usuario.github.io/grizalum-sistema-financiero">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
+    <link rel="apple-touch-icon" href="../assets/images/logo-192.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="brand-icon loading-logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>GRIZALUM</h1>
+            <p>Cargando sistema financiero...</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="company-brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>GRIZALUM</h1>
+                        <p>Control Financiero</p>
+                    </div>
+                </div>
+                
+                <div class="financial-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Flujo de Caja</span>
+                        <span class="summary-value" id="sidebarCashFlow">S/. 24,500</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Ingresos Mes</span>
+                        <span class="summary-value" id="sidebarRevenue">S/. 45,200</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Gastos Mes</span>
+                        <span class="summary-value" id="sidebarExpenses">S/. 28,700</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Utilidad Neta</span>
+                        <span class="summary-value" id="sidebarProfit">S/. 16,500</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Panel Principal
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link active" onclick="showSection('dashboard')">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('cash-flow')">
+                            <i class="nav-icon fas fa-water"></i>
+                            <span>Flujo de Caja</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="fas fa-calculator"></i>
+                        Contabilidad
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('income-statement')">
+                            <i class="nav-icon fas fa-chart-pie"></i>
+                            <span>Estado de Resultados</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('balance-sheet')">
+                            <i class="nav-icon fas fa-balance-scale"></i>
+                            <span>Balance General</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('accounts-receivable')">
+                            <i class="nav-icon fas fa-coins"></i>
+                            <span>Cuentas por Cobrar</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('accounts-payable')">
+                            <i class="nav-icon fas fa-credit-card"></i>
+                            <span>Cuentas por Pagar</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="fas fa-warehouse"></i>
+                        Operaciones
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('inventory')">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            <span>Inventario</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('sales')">
+                            <i class="nav-icon fas fa-shopping-cart"></i>
+                            <span>Ventas</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('purchases')">
+                            <i class="nav-icon fas fa-truck"></i>
+                            <span>Compras</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="fas fa-chart-area"></i>
+                        Análisis
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('financial-analysis')">
+                            <i class="nav-icon fas fa-magnifying-glass-chart"></i>
+                            <span>Análisis Financiero</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" onclick="showSection('reports')">
+                            <i class="nav-icon fas fa-file-alt"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="executive-header">
+                <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title" id="pageTitle">Dashboard Ejecutivo</h1>
+                        <p class="page-subtitle" id="pageSubtitle">Resumen financiero en tiempo real</p>
+                        <div class="ai-insights">
+                            <i class="fas fa-brain"></i>
+                            <span>IA predice crecimiento del 15% este trimestre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-controls">
+                    <div class="time-period-selector">
+                        <button class="period-btn active" onclick="changePeriod('hoy', this)">Hoy</button>
+                        <button class="period-btn" onclick="changePeriod('semana', this)">Semana</button>
+                        <button class="period-btn" onclick="changePeriod('mes', this)">Mes</button>
+                        <button class="period-btn" onclick="changePeriod('trimestre', this)">Trimestre</button>
+                        <button class="period-btn" onclick="changePeriod('año', this)">Año</button>
+                    </div>
+
+                    <button class="notification-center" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <div class="executive-profile">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">Admin Usuario</div>
+                            <div class="profile-role">Gerente General</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- DASHBOARD SECTION -->
+                <section class="page-section active" id="dashboard">
+                    <!-- REAL-TIME INDICATOR -->
+                    <div style="margin-bottom: 1rem;">
+                        <div class="real-time-indicator">
+                            <div class="real-time-dot"></div>
+                            <span>Datos actualizados hace 2 minutos</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI CARDS -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card cash-flow profit-glow micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Flujo de Caja Actual</h3>
+                                    <p class="kpi-period">Julio 2025</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-profit)">
+                                    <i class="fas fa-water"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 24,500</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+18.5%</span>
+                                </div>
+                                <span>vs mes anterior</span>
+                            </div>
+                            <div class="ai-prediction">
+                                <i class="fas fa-brain ai-prediction-icon"></i>
+                                <strong>IA predice:</strong> Flujo positivo sostenido próximos 3 meses
+                            </div>
+                        </div>
+
+                        <div class="kpi-card revenue micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Ingresos Totales</h3>
+                                    <p class="kpi-period">Julio 2025</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-blue)">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 45,200</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12.3%</span>
+                                </div>
+                                <span>vs mes anterior</span>
+                            </div>
+                            <div class="ai-prediction">
+                                <i class="fas fa-brain ai-prediction-icon"></i>
+                                <strong>IA sugiere:</strong> Meta agosto: S/. 52,000 (alcanzable)
+                            </div>
+                        </div>
+
+                        <div class="kpi-card expenses micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Gastos Operativos</h3>
+                                    <p class="kpi-period">Julio 2025</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-loss)">
+                                    <i class="fas fa-chart-line-down"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 28,700</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-positive">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>-5.2%</span>
+                                </div>
+                                <span>vs mes anterior</span>
+                            </div>
+                            <div class="ai-prediction">
+                                <i class="fas fa-brain ai-prediction-icon"></i>
+                                <strong>IA alerta:</strong> Gasto en marketing puede optimizarse 15%
+                            </div>
+                        </div>
+
+                        <div class="kpi-card profit gold-glow micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Utilidad Neta</h3>
+                                    <p class="kpi-period">Julio 2025</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-gold)">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 16,500</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+28.7%</span>
+                                </div>
+                                <span>Margen: 36.5%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 73%" title="Meta anual: 73% completado"></div>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accounts-receivable micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Cuentas por Cobrar</h3>
+                                    <p class="kpi-period">Pendientes</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-emerald)">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 32,800</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-neutral">
+                                    <i class="fas fa-clock"></i>
+                                    <span>24 días</span>
+                                </div>
+                                <span>promedio de cobro</span>
+                            </div>
+                            <div class="ai-prediction">
+                                <i class="fas fa-brain ai-prediction-icon"></i>
+                                <strong>IA recomienda:</strong> Contactar 3 clientes esta semana
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accounts-payable micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Cuentas por Pagar</h3>
+                                    <p class="kpi-period">Pendientes</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-violet)">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 18,900</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-neutral">
+                                    <i class="fas fa-clock"></i>
+                                    <span>15 días</span>
+                                </div>
+                                <span>promedio de pago</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card inventory micro-interaction">
+                            <div class="kpi-header">
+                                <div class="kpi-info">
+                                    <h3>Inventario Total</h3>
+                                    <p class="kpi-period">Stock actual</p>
+                                </div>
+                                <div class="kpi-icon" style="background: var(--gradient-amber)">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                            </div>
+                            <div class="kpi-value kpi-value-animation">S/. 67,300</div>
+                            <div class="kpi-change">
+                                <div class="change-indicator change-neutral">
+                                    <i class="fas fa-sync"></i>
+                                    <span>12.5x</span>
+                                </div>
+                                <span>rotación anual</span>
+                            </div>
+                            <div class="ai-prediction">
+                                <i class="fas fa-brain ai-prediction-icon"></i>
+                                <strong>IA avisa:</strong> Producto A se agotará en 12 días
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS SECTION -->
+                    <div class="charts-section">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <i class="chart-icon fas fa-chart-line"></i>
+                                    Tendencia de Ingresos vs Gastos
+                                </h3>
+                                <div class="real-time-indicator">
+                                    <div class="real-time-dot"></div>
+                                    <span>Tiempo Real</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <i class="chart-icon fas fa-chart-pie"></i>
+                                    Distribución de Gastos
+                                </h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="expensesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <i class="chart-icon fas fa-water"></i>
+                                    Flujo de Caja Proyectado
+                                </h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="cashFlowChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">
+                                    <i class="chart-icon fas fa-coins"></i>
+                                    Aging Cuentas por Cobrar
+                                </h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="agingChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI INSIGHTS SECTION -->
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-brain"></i>
+                                Insights de Inteligencia Artificial
+                            </h2>
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-sm" onclick="generateAIReport()">
+                                    <i class="fas fa-magic"></i>
+                                    Generar Análisis IA
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                                <h4 style="color: var(--indigo); margin-bottom: 1rem; font-weight: 700;">
+                                    <i class="fas fa-chart-line" style="margin-right: 0.5rem;"></i>
+                                    Predicción de Ventas
+                                </h4>
+                                <p style="color: var(--gray-700); line-height: 1.6;">
+                                    Basado en datos históricos y tendencias actuales, las ventas de agosto podrían alcanzar <strong>S/. 52,000</strong> (+15% vs julio). 
+                                    Recomendación: Incrementar inventario de productos estrella.
+                                </p>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(5, 150, 105, 0.2);">
+                                <h4 style="color: var(--profit); margin-bottom: 1rem; font-weight: 700;">
+                                    <i class="fas fa-coins" style="margin-right: 0.5rem;"></i>
+                                    Optimización de Cobranzas
+                                </h4>
+                                <p style="color: var(--gray-700); line-height: 1.6;">
+                                    <strong>3 clientes</strong> están cerca del límite de crédito. Contactar esta semana podría recuperar 
+                                    <strong>S/. 15,200</strong> y mejorar el flujo de caja en 8 días.
+                                </p>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(217, 119, 6, 0.2);">
+                                <h4 style="color: var(--warning); margin-bottom: 1rem; font-weight: 700;">
+                                    <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+                                    Alerta de Inventario
+                                </h4>
+                                <p style="color: var(--gray-700); line-height: 1.6;">
+                                    El producto "Material Premium" se agotará en <strong>12 días</strong> al ritmo actual. 
+                                    Generar orden de compra por <strong>S/. 8,500</strong> para evitar quiebre de stock.
+                                </p>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(184, 115, 51, 0.1) 100%); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(212, 175, 55, 0.2);">
+                                <h4 style="color: var(--peru-gold); margin-bottom: 1rem; font-weight: 700;">
+                                    <i class="fas fa-chart-bar" style="margin-right: 0.5rem;"></i>
+                                    Oportunidad de Ahorro
+                                </h4>
+                                <p style="color: var(--gray-700); line-height: 1.6;">
+                                    Renegociar contrato con proveedor principal podría ahorrar <strong>S/. 3,200/mes</strong> 
+                                    (11% del gasto actual). ROI estimado: 340% anual.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CASH FLOW SECTION -->
+                <section class="page-section" id="cash-flow">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-water"></i>
+                                Gestión de Flujo de Caja
+                            </h2>
+                            <div class="card-actions">
+                                <button class="btn btn-success" onclick="exportCashFlow()">
+                                    <i class="fas fa-download"></i>
+                                    Exportar
+                                </button>
+                                <button class="btn btn-primary" onclick="showCashFlowForm()">
+                                    <i class="fas fa-plus"></i>
+                                    Nueva Transacción
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CASH FLOW FORM -->
+                        <div id="cashFlowForm" style="display: none; margin-bottom: 2rem; background: var(--gray-50); padding: 2rem; border-radius: 16px;">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--gray-700);">Nueva Transacción de Flujo de Caja</h3>
+                            <form onsubmit="addCashFlowTransaction(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Fecha</label>
+                                        <input type="date" class="form-input" id="transactionDate" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tipo</label>
+                                        <select class="form-input" id="transactionType" required>
+                                            <option value="">Seleccionar tipo...</option>
+                                            <option value="operativo">Actividad Operativa</option>
+                                            <option value="inversion">Actividad de Inversión</option>
+                                            <option value="financiamiento">Actividad de Financiamiento</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i>
+                                        Guardar Transacción
+                                    </button>
+                                    <button type="button" class="btn btn-neutral" onclick="hideCashFlowForm()">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- CASH FLOW CHART -->
+                        <div style="margin-bottom: 2rem;">
+                            <div class="chart-container">
+                                <canvas id="cashFlowDetailChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- CASH FLOW TABLE -->
+                        <table class="financial-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th>Tipo</th>
+                                    <th>Entrada</th>
+                                    <th>Salida</th>
+                                    <th>Saldo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashFlowTableBody">
+                                <tr>
+                                    <td>17/07/2025</td>
+                                    <td>Venta productos julio</td>
+                                    <td>Ventas</td>
+                                    <td>Operativo</td>
+                                    <td style="color: var(--profit); font-weight: 700;">+S/. 15,200</td>
+                                    <td>-</td>
+                                    <td style="color: var(--profit); font-weight: 700;">S/. 24,500</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-neutral micro-interaction" onclick="editTransaction(1)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>16/07/2025</td>
+                                    <td>Pago proveedores</td>
+                                    <td>Compras</td>
+                                    <td>Operativo</td>
+                                    <td>-</td>
+                                    <td style="color: var(--loss); font-weight: 700;">-S/. 8,500</td>
+                                    <td style="color: var(--profit); font-weight: 700;">S/. 9,300</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-neutral micro-interaction" onclick="editTransaction(2)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>15/07/2025</td>
+                                    <td>Préstamo bancario</td>
+                                    <td>Financiamiento</td>
+                                    <td>Financiamiento</td>
+                                    <td style="color: var(--profit); font-weight: 700;">+S/. 25,000</td>
+                                    <td>-</td>
+                                    <td style="color: var(--profit); font-weight: 700;">S/. 17,800</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-neutral micro-interaction" onclick="editTransaction(3)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- OTHER SECTIONS WITH EMPTY STATES -->
+                <section class="page-section" id="income-statement">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-chart-pie"></i>
+                                Estado de Resultados
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">El Estado de Resultados estará disponible próximamente con análisis automático e insights de IA.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="balance-sheet">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-balance-scale"></i>
+                                Balance General
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">El Balance General estará disponible próximamente con ratios financieros automáticos.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="accounts-receivable">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-coins"></i>
+                                Cuentas por Cobrar
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Gestión de cobranzas con aging automático y recordatorios inteligentes.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="accounts-payable">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-credit-card"></i>
+                                Cuentas por Pagar
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Control de pagos con cronogramas automáticos y optimización de cash flow.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="inventory">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-boxes"></i>
+                                Inventario
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Control de stock con alertas automáticas y predicción de demanda con IA.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="sales">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-shopping-cart"></i>
+                                Ventas
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Gestión de ventas con facturación electrónica y análisis de tendencias.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="purchases">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-truck"></i>
+                                Compras
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Gestión de compras con órdenes automáticas y evaluación de proveedores.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="financial-analysis">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-magnifying-glass-chart"></i>
+                                Análisis Financiero
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-magnifying-glass-chart"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Ratios financieros automáticos y análisis comparativo con IA predictiva.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="page-section" id="reports">
+                    <div class="executive-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="card-icon fas fa-file-alt"></i>
+                                Reportes
+                            </h2>
+                        </div>
+                        <div class="empty-state-executive">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <h3 class="empty-state-title">Módulo en Desarrollo</h3>
+                            <p class="empty-state-subtitle">Reportes automáticos ejecutivos con distribución programada por email.</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Notificarme cuando esté listo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/charts.js"></script>
+    <script src="../assets/js/ai.js"></script>
+</body>
+</html>
+                                    <div class="form-group">
+                                        <label class="form-label">Categoría</label>
+                                        <select class="form-input" id="transactionCategory" required>
+                                            <option value="">Seleccionar categoría...</option>
+                                            <option value="venta">Venta de productos/servicios</option>
+                                            <option value="compra">Compra de mercaderías</option>
+                                            <option value="gasto">Gasto operativo</option>
+                                            <option value="prestamo">Préstamo bancario</option>
+                                            <option value="inversion">Inversión en activos</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Descripción</label>
+                                        <input type="text" class="form-input" id="transactionDescription" placeholder="Descripción de la transacción" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Monto (S/.)</label>
+                                        <input type="number" class="form-input" id="transactionAmount" step="0.01" placeholder="0.00" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Flujo</label>
+                                        <select class="form-input" id="transactionFlow" required>
+                                            <option value="">Seleccionar...</option>
+                                            <option value="entrada">Entrada (+)</option>
+                                            <option value="salida">Salida (-)</option>
+                                        </select>
+                                    </div>
 
