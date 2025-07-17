@@ -1,1 +1,741 @@
+/* ============================================================================
+   GRIZALUM - Responsive Styles
+   Versión: 1.0.0
+   Descripción: Estilos responsive para todos los dispositivos
+============================================================================ */
 
+/* ===== LARGE DESKTOPS (1400px+) ===== */
+@media (min-width: 1400px) {
+    .sidebar {
+        width: 340px;
+    }
+    
+    .main-content {
+        margin-left: 340px;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .charts-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    .content-area {
+        padding: 3rem;
+    }
+}
+
+/* ===== STANDARD DESKTOPS (1200px - 1399px) ===== */
+@media (max-width: 1399px) and (min-width: 1200px) {
+    .sidebar {
+        width: 320px;
+    }
+    
+    .main-content {
+        margin-left: 320px;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .charts-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ===== TABLETS & SMALL LAPTOPS (768px - 1199px) ===== */
+@media (max-width: 1199px) {
+    /* Hide sidebar on smaller screens */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 320px;
+        z-index: 1001;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-2xl), 100vw 0 0 rgba(0, 0, 0, 0.5);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .executive-header {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .header-controls {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .time-period-selector {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .content-area {
+        padding: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+    }
+    
+    .executive-card,
+    .chart-card {
+        padding: 1.5rem;
+    }
+    
+    .kpi-card {
+        padding: 1.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== MOBILE LANDSCAPE (480px - 767px) ===== */
+@media (max-width: 767px) and (min-width: 480px) {
+    .executive-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .header-controls {
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .time-period-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .period-btn {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .kpi-card {
+        padding: 1.25rem;
+    }
+    
+    .kpi-value {
+        font-size: 2rem;
+    }
+    
+    .content-area {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .ai-insights {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .executive-card,
+    .chart-card {
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .financial-table {
+        font-size: 0.8rem;
+    }
+    
+    .financial-table th,
+    .financial-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    /* Make table horizontally scrollable */
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.8rem;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .card-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .form-input {
+        padding: 0.875rem;
+    }
+}
+
+/* ===== MOBILE PORTRAIT (320px - 479px) ===== */
+@media (max-width: 479px) {
+    .executive-header {
+        padding: 0.75rem;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .page-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .ai-insights {
+        font-size: 0.65rem;
+        padding: 0.35rem 0.7rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .time-period-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .period-btn {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .content-area {
+        padding: 0.75rem;
+    }
+    
+    .kpi-card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .kpi-value {
+        font-size: 1.75rem;
+    }
+    
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .executive-card,
+    .chart-card {
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .financial-table {
+        font-size: 0.7rem;
+    }
+    
+    .financial-table th,
+    .financial-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.7rem;
+    }
+    
+    .form-input {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .form-label {
+        font-size: 0.8rem;
+    }
+    
+    /* Sidebar adjustments for very small screens */
+    .sidebar {
+        width: 280px;
+    }
+    
+    .sidebar-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .brand-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .brand-text h1 {
+        font-size: 1.5rem;
+    }
+    
+    .brand-text p {
+        font-size: 0.7rem;
+    }
+    
+    .financial-summary {
+        padding: 1rem;
+    }
+    
+    .summary-item {
+        margin-bottom: 0.75rem;
+        padding: 0.4rem 0;
+    }
+    
+    .summary-label {
+        font-size: 0.65rem;
+    }
+    
+    .summary-value {
+        font-size: 0.8rem;
+    }
+    
+    .nav-link {
+        padding: 0.875rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .nav-icon {
+        font-size: 1.1rem;
+        width: 20px;
+    }
+    
+    .nav-section-title {
+        font-size: 0.65rem;
+        padding: 0 1rem 0.75rem;
+    }
+    
+    /* Profile adjustments */
+    .executive-profile {
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+    }
+    
+    .profile-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    
+    .profile-name {
+        font-size: 0.8rem;
+    }
+    
+    .profile-role {
+        font-size: 0.7rem;
+    }
+    
+    .notification-center {
+        padding: 0.75rem;
+    }
+}
+
+/* ===== ULTRA WIDE SCREENS (1600px+) ===== */
+@media (min-width: 1600px) {
+    .sidebar {
+        width: 360px;
+    }
+    
+    .main-content {
+        margin-left: 360px;
+    }
+    
+    .content-area {
+        padding: 4rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+    
+    .charts-section {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2.5rem;
+    }
+    
+    .page-title {
+        font-size: 3rem;
+    }
+    
+    .executive-card,
+    .chart-card {
+        padding: 3rem;
+    }
+    
+    .kpi-card {
+        padding: 2.5rem;
+    }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects for touch devices */
+    .kpi-card:hover,
+    .chart-card:hover,
+    .executive-card:hover {
+        transform: none;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .nav-link:hover {
+        transform: none;
+        background: rgba(212, 175, 55, 0.2);
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    /* Increase touch targets */
+    .btn {
+        min-height: 48px;
+        padding: 1rem 2rem;
+    }
+    
+    .nav-link {
+        min-height: 48px;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .period-btn {
+        min-height: 44px;
+    }
+    
+    .notification-center {
+        min-height: 48px;
+        min-width: 48px;
+    }
+    
+    .mobile-menu-toggle {
+        min-height: 48px;
+        min-width: 48px;
+    }
+    
+    /* Remove complex animations for better performance */
+    * {
+        animation-duration: 0.2s !important;
+    }
+}
+
+/* ===== HIGH DPI DISPLAYS ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Optimize for retina displays */
+    .brand-icon,
+    .kpi-icon,
+    .profile-avatar {
+        transform: translateZ(0);
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    .financial-table,
+    .form-input {
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* ===== PRINT OPTIMIZATIONS ===== */
+@media print {
+    .sidebar,
+    .executive-header,
+    .mobile-menu-toggle,
+    .notification-center,
+    .btn,
+    .card-actions {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .content-area {
+        padding: 0 !important;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    .charts-section {
+        display: none !important;
+    }
+    
+    .executive-card,
+    .kpi-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .page-title {
+        font-size: 1.5rem !important;
+        color: #000 !important;
+    }
+    
+    .kpi-value {
+        color: #000 !important;
+    }
+    
+    .financial-table {
+        font-size: 0.8rem !important;
+    }
+    
+    .ai-prediction {
+        display: none !important;
+    }
+}
+
+/* ===== DARK MODE SUPPORT (if enabled) ===== */
+@media (prefers-color-scheme: dark) {
+    /* This would be activated if dark mode is implemented */
+    /* Currently using light theme as per requirements */
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .loading-progress,
+    .real-time-dot,
+    .notification-badge {
+        animation: none !important;
+    }
+    
+    .kpi-card:hover,
+    .chart-card:hover,
+    .executive-card:hover {
+        transform: none !important;
+    }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+    .kpi-card,
+    .chart-card,
+    .executive-card {
+        border: 2px solid var(--gray-800) !important;
+    }
+    
+    .btn {
+        border: 2px solid currentColor !important;
+    }
+    
+    .form-input {
+        border: 2px solid var(--gray-800) !important;
+    }
+    
+    .nav-link.active {
+        border: 2px solid var(--primary-dark) !important;
+    }
+}
+
+/* ===== CONTAINER QUERIES (Future-proofing) ===== */
+@container (max-width: 400px) {
+    .kpi-card {
+        padding: 1rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* ===== LANDSCAPE PHONE SPECIFIC ===== */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        width: 260px;
+    }
+    
+    .sidebar-header {
+        padding: 1rem;
+    }
+    
+    .brand-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .brand-text h1 {
+        font-size: 1.25rem;
+    }
+    
+    .financial-summary {
+        padding: 1rem;
+    }
+    
+    .nav-link {
+        padding: 0.75rem 1rem;
+    }
+    
+    .executive-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .content-area {
+        padding: 1rem;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .kpi-card {
+        padding: 1rem;
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 180px;
+    }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+@media (max-width: 767px) {
+    /* Ensure minimum touch target sizes */
+    button,
+    a,
+    input,
+    select {
+        min-height: 44px;
+    }
+    
+    /* Improve text readability */
+    body {
+        font-size: 16px;
+    }
+    
+    .form-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Better spacing for touch interfaces */
+    .btn + .btn {
+        margin-top: 0.5rem;
+    }
+    
+    .nav-item + .nav-item {
+        margin-top: 0.25rem;
+    }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+@media (max-width: 767px) {
+    /* Reduce complex visual effects on mobile */
+    .kpi-card::before,
+    .chart-card::before,
+    .executive-card::before {
+        display: none;
+    }
+    
+    .profit-glow,
+    .loss-glow,
+    .gold-glow {
+        box-shadow: var(--shadow-md) !important;
+    }
+    
+    /* Simplify gradients for better performance */
+    .brand-icon,
+    .kpi-icon {
+        background: var(--peru-gold) !important;
+    }
+    
+    .nav-link::before,
+    .btn::before,
+    .change-indicator::before {
+        display: none;
+    }
+}
+    
+    .chart-title {
+        font-size: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align
